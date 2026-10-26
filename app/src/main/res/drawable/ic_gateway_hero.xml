@@ -1,0 +1,234 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="280dp"
+    android:height="150dp"
+    android:viewportWidth="280"
+    android:viewportHeight="150">
+
+    <!-- Soft Base Shadow / Glow under laptop -->
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M16,132 C50,140 120,140 160,132 C140,126 36,126 16,132 Z" />
+    <!-- Soft Base Shadow / Glow under phone -->
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M172,134 C190,138 220,138 238,134 C225,130 185,130 172,134 Z" />
+
+    <!-- ==================== LAPTOP (Left) ==================== -->
+    <!-- Laptop Screen Outer Shell / Lid -->
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M24,20 L138,20 A4,4 0 0,1 142,24 L142,106 A2,2 0 0,1 140,108 L22,108 A2,2 0 0,1 20,106 L20,24 A4,4 0 0,1 24,20 Z" />
+
+    <!-- Screen Bezel Inset / Glass -->
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M24,24 L138,24 L138,104 L24,104 Z" />
+
+    <!-- Web Portal Screen Content Canvas -->
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M26,26 L136,26 L136,102 L26,102 Z" />
+
+    <!-- Web Portal Top Navigation Bar -->
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M26,26 L136,26 L136,36 L26,36 Z" />
+    <!-- Web Portal Header Dots / Controls -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M31,31 A1.5,1.5 0 1,1 31,28 A1.5,1.5 0 1,1 31,31 Z" />
+    <path
+        android:fillColor="#93C5FD"
+        android:pathData="M38,30 L65,30 A1,1 0 0,1 65,32 L38,32 A1,1 0 0,1 38,30 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.8"
+        android:pathData="M124,31 A2,2 0 1,1 124,27 A2,2 0 1,1 124,31 Z" />
+
+    <!-- Web Portal Left Sidebar / Channel List -->
+    <path
+        android:fillColor="#F1F5F9"
+        android:pathData="M26,36 L52,36 L52,102 L26,102 Z" />
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M29,42 L49,42 A2,2 0 0,1 49,46 L29,46 A2,2 0 0,1 29,42 Z" />
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M29,50 L47,50 A1.5,1.5 0 0,1 47,53 L29,53 A1.5,1.5 0 0,1 29,50 Z" />
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M29,57 L45,57 A1.5,1.5 0 0,1 45,60 L29,60 A1.5,1.5 0 0,1 29,57 Z" />
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M29,64 L48,64 A1.5,1.5 0 0,1 48,67 L29,67 A1.5,1.5 0 0,1 29,64 Z" />
+
+    <!-- Web Portal Main Dashboard Content Cards -->
+    <!-- Card 1 (Top Hero) -->
+    <path
+        android:fillColor="#EFF6FF"
+        android:pathData="M56,41 L132,41 A2,2 0 0,1 134,43 L134,55 A2,2 0 0,1 132,57 L56,57 A2,2 0 0,1 54,55 L54,43 A2,2 0 0,1 56,41 Z" />
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M59,46 L82,46 A1,1 0 0,1 82,48 L59,48 A1,1 0 0,1 59,46 Z" />
+    <path
+        android:fillColor="#93C5FD"
+        android:pathData="M59,51 L110,51 A1,1 0 0,1 110,53 L59,53 A1,1 0 0,1 59,51 Z" />
+
+    <!-- Card 2 (Table Row 1) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,61 L134,61 L134,72 L54,72 Z" />
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M60,67 A2,2 0 1,1 60,63 A2,2 0 1,1 60,67 Z" />
+    <path
+        android:fillColor="#334155"
+        android:pathData="M66,64 L96,64 A1,1 0 0,1 96,66 L66,66 A1,1 0 0,1 66,64 Z" />
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M118,63 L130,63 A2,2 0 0,1 130,67 L118,67 A2,2 0 0,1 118,63 Z" />
+
+    <!-- Card 3 (Table Row 2) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,75 L134,75 L134,86 L54,86 Z" />
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M60,81 A2,2 0 1,1 60,77 A2,2 0 1,1 60,81 Z" />
+    <path
+        android:fillColor="#334155"
+        android:pathData="M66,78 L104,78 A1,1 0 0,1 104,80 L66,80 A1,1 0 0,1 66,78 Z" />
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M118,77 L130,77 A2,2 0 0,1 130,81 L118,81 A2,2 0 0,1 118,77 Z" />
+
+    <!-- Card 4 (Table Row 3) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,89 L134,89 L134,100 L54,100 Z" />
+    <path
+        android:fillColor="#6366F1"
+        android:pathData="M60,95 A2,2 0 1,1 60,91 A2,2 0 1,1 60,95 Z" />
+    <path
+        android:fillColor="#334155"
+        android:pathData="M66,92 L90,92 A1,1 0 0,1 90,94 L66,94 A1,1 0 0,1 66,92 Z" />
+
+    <!-- Laptop Base / Keyboard Deck -->
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M10,108 L152,108 A3,3 0 0,1 155,111 L151,120 A4,4 0 0,1 147,123 L15,123 A4,4 0 0,1 11,120 L7,111 A3,3 0 0,1 10,108 Z" />
+
+    <!-- Keyboard Trackpad Indent -->
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M70,111 L92,111 A1.5,1.5 0 0,1 93.5,112.5 L93.5,113.5 A0.5,0.5 0 0,1 93,114 L69,114 A0.5,0.5 0 0,1 68.5,113.5 L68.5,112.5 A1.5,1.5 0 0,1 70,111 Z" />
+
+    <!-- Laptop Front Lip Edge -->
+    <path
+        android:fillColor="#64748B"
+        android:pathData="M14,122 L148,122 A1,1 0 0,1 149,123 L146,124.5 L16,124.5 L13,123 A1,1 0 0,1 14,122 Z" />
+
+    <!-- ==================== SMARTPHONE (Right) ==================== -->
+    <!-- Phone Outer Body / Bezel -->
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M178,28 L232,28 A12,12 0 0,1 244,40 L244,124 A12,12 0 0,1 232,136 L178,136 A12,12 0 0,1 166,124 L166,40 A12,12 0 0,1 178,28 Z" />
+
+    <!-- Phone Screen Display Surface -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M180,32 L230,32 A8,8 0 0,1 238,40 L238,124 A8,8 0 0,1 230,132 L180,132 A8,8 0 0,1 172,124 L172,40 A8,8 0 0,1 180,32 Z" />
+
+    <!-- Phone Speaker Notch / Dynamic Island -->
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M198,34 L212,34 A2,2 0 0,1 214,36 A2,2 0 0,1 212,38 L198,38 A2,2 0 0,1 196,36 A2,2 0 0,1 198,34 Z" />
+
+    <!-- Phone Header Bar -->
+    <path
+        android:fillColor="#EFF6FF"
+        android:pathData="M172,42 L238,42 L238,54 L172,54 Z" />
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M180,48 A2.5,2.5 0 1,1 180,43 A2.5,2.5 0 1,1 180,48 Z" />
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M186,45 L210,45 A1,1 0 0,1 210,47 L186,47 A1,1 0 0,1 186,45 Z" />
+
+    <!-- Phone Chat Bubble 1 (Incoming Gray) -->
+    <path
+        android:fillColor="#F1F5F9"
+        android:pathData="M176,60 L216,60 A4,4 0 0,1 220,64 L220,70 A4,4 0 0,1 216,74 L176,74 A1,1 0 0,1 175,73 L175,61 A1,1 0 0,1 176,60 Z" />
+    <path
+        android:fillColor="#64748B"
+        android:pathData="M179,65 L212,65 A1,1 0 0,1 212,67 L179,67 A1,1 0 0,1 179,65 Z" />
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M179,69 L200,69 A1,1 0 0,1 200,71 L179,71 A1,1 0 0,1 179,69 Z" />
+
+    <!-- Phone Chat Bubble 2 (Outgoing Blue) -->
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M190,78 L232,78 A1,1 0 0,1 233,79 L233,91 A1,1 0 0,1 232,92 L190,92 A4,4 0 0,1 186,88 L186,82 A4,4 0 0,1 190,78 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M193,83 L226,83 A1,1 0 0,1 226,85 L193,85 A1,1 0 0,1 193,83 Z" />
+    <path
+        android:fillColor="#BFDBFE"
+        android:pathData="M193,87 L216,87 A1,1 0 0,1 216,89 L193,89 A1,1 0 0,1 193,87 Z" />
+
+    <!-- Phone Chat Bubble 3 (Incoming Gray) -->
+    <path
+        android:fillColor="#F1F5F9"
+        android:pathData="M176,96 L218,96 A4,4 0 0,1 222,100 L222,106 A4,4 0 0,1 218,110 L176,110 A1,1 0 0,1 175,109 L175,97 A1,1 0 0,1 176,96 Z" />
+    <path
+        android:fillColor="#64748B"
+        android:pathData="M179,101 L210,101 A1,1 0 0,1 210,103 L179,103 A1,1 0 0,1 179,101 Z" />
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M179,105 L198,105 A1,1 0 0,1 198,107 L179,107 A1,1 0 0,1 179,105 Z" />
+
+    <!-- Phone Bottom Input Bar Mock -->
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M174,116 L236,116 A3,3 0 0,1 236,126 L174,126 A3,3 0 0,1 174,116 Z" />
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M178,120 L216,120 A1,1 0 0,1 216,122 L178,122 A1,1 0 0,1 178,120 Z" />
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M230,121 A2,2 0 1,1 230,117 A2,2 0 1,1 230,121 Z" />
+
+    <!-- ==================== CONNECTION BRIDGE & GREEN LINK BADGE ==================== -->
+    <!-- Glowing Connection Beam Arc between Laptop and Phone -->
+    <path
+        android:strokeColor="#A7F3D0"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M138,58 C148,50 162,50 172,58" />
+
+    <!-- Emerald Green Outer Halo / Glow Circle -->
+    <path
+        android:fillColor="#10B981"
+        android:fillAlpha="0.22"
+        android:pathData="M152,70 A20,20 0 1,1 152,30 A20,20 0 1,1 152,70 Z" />
+
+    <!-- Emerald Green Solid Link Badge -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M152,65 A15,15 0 1,1 152,35 A15,15 0 1,1 152,65 Z" />
+
+    <!-- White Link Icon (Interlinked Chains) -->
+    <!-- Left Loop -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M149,46 L146,49 C144.5,50.5 144.5,53 146,54.5 C147.5,56 150,56 151.5,54.5 L154.5,51.5" />
+    <!-- Right Loop -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M155,54 L158,51 C159.5,49.5 159.5,47 158,45.5 C156.5,44 154,44 152.5,45.5 L149.5,48.5" />
+</vector>

@@ -1,0 +1,30 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+    <!-- Rounded squircle blue background -->
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M8,0 L28,0 A8,8 0 0,1 36,8 L36,28 A8,8 0 0,1 28,36 L8,36 A8,8 0 0,1 0,28 L0,8 A8,8 0 0,1 8,0 Z" />
+    
+    <!-- Monitor Screen Outer -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M8,8 L28,8 A3,3 0 0,1 31,11 L31,21 A3,3 0 0,1 28,24 L8,24 A3,3 0 0,1 5,21 L5,11 A3,3 0 0,1 8,8 Z" />
+    
+    <!-- Screen Inner Inset -->
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M7,10 L29,10 L29,20 L7,20 Z" />
+    
+    <!-- Monitor Stand Stem -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M16.5,24 L19.5,24 L19.5,27 L16.5,27 Z" />
+    
+    <!-- Monitor Stand Base -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M13,27 L23,27 A1,1 0 0,1 24,28 L24,28.5 A0.5,0.5 0 0,1 23.5,29 L12.5,29 A0.5,0.5 0 0,1 12,28.5 L12,28 A1,1 0 0,1 13,27 Z" />
+</vector>

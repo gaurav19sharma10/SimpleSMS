@@ -1,0 +1,30 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+    <!-- Soft squircle background -->
+    <path
+        android:fillColor="#EFF6FF"
+        android:strokeColor="#DBEAFE"
+        android:strokeWidth="1"
+        android:pathData="M8,1 L28,1 A7,7 0 0,1 35,8 L35,28 A7,7 0 0,1 28,35 L8,35 A7,7 0 0,1 1,28 L1,8 A7,7 0 0,1 8,1 Z" />
+
+    <!-- Left User Head -->
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M14,15 A3.5,3.5 0 1,1 14,8 A3.5,3.5 0 1,1 14,15 Z" />
+    <!-- Left User Body -->
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M7,26 C7,22 10.5,19 15,19 C16,19 16.9,19.2 17.8,19.5 C16.7,21 16,22.8 16,25 L16,26 L7,26 Z" />
+
+    <!-- Right User Head -->
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M23,17 A3,3 0 1,1 23,11 A3,3 0 1,1 23,17 Z" />
+    <!-- Right User Body -->
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M18,27 C18,23.5 21,21 24.5,21 C28,21 31,23.5 31,27 L18,27 Z" />
+</vector>

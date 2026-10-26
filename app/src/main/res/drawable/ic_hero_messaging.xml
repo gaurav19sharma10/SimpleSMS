@@ -1,0 +1,163 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="150dp"
+    android:height="130dp"
+    android:viewportWidth="150"
+    android:viewportHeight="130">
+
+    <!-- Soft Cloud Background 1 -->
+    <path
+        android:fillAlpha="0.65"
+        android:fillColor="#E1EDFD"
+        android:pathData="M35,60 C25,60 18,68 18,78 C18,88 26,96 36,96 L95,96 C105,96 112,88 112,78 C112,70 106,63 98,61 C96,48 84,38 70,38 C58,38 48,46 45,57 C42,56 38,60 35,60 Z" />
+
+    <!-- Soft Cloud Background 2 (Lighter) -->
+    <path
+        android:fillAlpha="0.8"
+        android:fillColor="#FFFFFF"
+        android:pathData="M25,85 C18,85 12,90 12,97 C12,104 18,110 25,110 L80,110 C87,110 92,104 92,97 C92,91 88,86 82,85 C81,76 72,70 62,70 C53,70 45,76 43,84 C41,83 38,85 25,85 Z" />
+
+    <!-- Green Plant Leaves at Bottom Right -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M135,115 C132,105 136,92 144,86 C143,96 139,108 135,115 Z" />
+    <path
+        android:fillColor="#34D399"
+        android:pathData="M130,115 C125,108 123,98 126,90 C130,98 130,108 130,115 Z" />
+    <path
+        android:fillColor="#059669"
+        android:pathData="M138,115 C136,108 141,102 147,98 C144,104 142,110 138,115 Z" />
+
+    <!-- Smartphone Body (Tilted 3D Isometric View) -->
+    <!-- Phone Back/Border Shadow -->
+    <path
+        android:fillColor="#2563EB"
+        android:pathData="M102,18 L138,32 C142,33 144,38 143,42 L128,114 C127,118 123,121 119,119 L83,105 C79,104 77,99 78,95 L93,23 C94,19 98,16 102,18 Z" />
+
+    <!-- Phone Inner Bezel -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M103,21 L136,34 C139,35 140,38 139,41 L126,111 C125,114 122,116 119,115 L86,102 C83,101 82,98 83,95 L96,25 C97,22 100,20 103,21 Z" />
+
+    <!-- Phone Screen Surface (Glossy Light Blue) -->
+    <path
+        android:fillColor="#EBF3FE"
+        android:pathData="M104,26 L133,37 C135,38 136,40 135,42 L123,105 C122,107 120,108 118,107 L89,96 C87,95 86,93 87,91 L99,28 C100,26 102,25 104,26 Z" />
+
+    <!-- Phone Top Speaker Bar -->
+    <path
+        android:fillColor="#93C5FD"
+        android:pathData="M114,31 L124,35 C125,35 125,37 124,37 L114,33 C113,33 113,31 114,31 Z" />
+
+    <!-- Speech Bubble on Phone Screen 1 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M98,46 L124,56 C126,57 127,60 126,62 L124,67 C123,69 120,70 118,69 L94,60 C92,59 91,56 92,54 L94,49 C95,47 97,46 98,46 Z" />
+    <path
+        android:fillColor="#60A5FA"
+        android:pathData="M97,52 L116,59 C117,59 117,61 116,61 L97,54 C96,54 96,52 97,52 Z" />
+    <path
+        android:fillColor="#93C5FD"
+        android:pathData="M96,57 L110,62 C111,62 111,64 110,64 L96,59 C95,59 95,57 96,57 Z" />
+
+    <!-- Speech Bubble on Phone Screen 2 -->
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M102,73 L126,82 C127,82 128,85 127,87 L126,90 C125,92 123,93 121,92 L99,84 C97,83 96,81 97,79 L98,76 C99,74 101,73 102,73 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M102,78 L119,84 C120,84 120,86 119,86 L102,80 C101,80 101,78 102,78 Z" />
+
+    <!-- Floating White Chat Bubble in front -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M52,38 C52,31 58,25 66,25 L104,25 C112,25 118,31 118,38 L118,48 C118,55 112,61 104,61 L78,61 L64,70 L66,61 C58,61 52,55 52,48 Z" />
+    <path
+        android:fillColor="#BFDBFE"
+        android:pathData="M62,36 L108,36 C109,36 110,38 110,39 C110,40 109,42 108,42 L62,42 C61,42 60,40 60,39 C60,38 61,36 62,36 Z" />
+    <path
+        android:fillColor="#93C5FD"
+        android:pathData="M62,47 L96,47 C97,47 98,49 98,50 C98,51 97,53 96,53 L62,53 C61,53 60,51 60,50 C60,49 61,47 62,47 Z" />
+
+    <!-- Floating Open Envelope -->
+    <!-- Envelope Shadow -->
+    <path
+        android:fillAlpha="0.25"
+        android:fillColor="#1E3A8A"
+        android:pathData="M68,98 L112,98 C116,98 118,102 116,105 L110,112 L70,112 Z" />
+
+    <!-- Envelope Body (White) -->
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M68,64 L114,64 C117,64 120,67 120,70 L120,96 C120,99 117,102 114,102 L68,102 C65,102 62,99 62,96 L62,70 C62,67 65,64 68,64 Z" />
+
+    <!-- Letter Sheet Sliding Out of Envelope -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M68,52 L114,52 C116,52 117,53 117,55 L117,76 L65,76 L65,55 C65,53 66,52 68,52 Z" />
+    <path
+        android:fillColor="#3B82F6"
+        android:pathData="M72,58 L104,58 C105,58 106,59 106,60 C106,61 105,62 104,62 L72,62 C71,62 70,61 70,60 C70,59 71,58 72,58 Z" />
+    <path
+        android:fillColor="#93C5FD"
+        android:pathData="M72,66 L98,66 C99,66 100,67 100,68 C100,69 99,70 98,70 L72,70 C71,70 70,69 70,68 C70,67 71,66 72,66 Z" />
+
+    <!-- Envelope Front Flap Creases -->
+    <path
+        android:fillColor="#DBEAFE"
+        android:pathData="M62,70 L91,87 L62,102 Z" />
+    <path
+        android:fillColor="#BFDBFE"
+        android:pathData="M120,70 L91,87 L120,102 Z" />
+    <path
+        android:fillColor="#EFF6FF"
+        android:pathData="M62,102 L91,83 L120,102 Z" />
+
+    <!-- Envelope Border/Outline -->
+    <path
+        android:strokeColor="#93C5FD"
+        android:strokeWidth="1.2"
+        android:pathData="M62,70 L91,87 L120,70" />
+
+    <!-- Dynamic Flying Blue Paper Airplane (Top Left) -->
+    <!-- Wing Right (Upper) -->
+    <path
+        android:fillColor="#0066FF"
+        android:pathData="M52,14 L88,38 L72,42 L52,14 Z" />
+
+    <!-- Wing Left (Lower) -->
+    <path
+        android:fillColor="#2563EB"
+        android:pathData="M52,14 L72,42 L62,49 L52,14 Z" />
+
+    <!-- Airplane Center Fold & Underside Shadow -->
+    <path
+        android:fillColor="#1D4ED8"
+        android:pathData="M72,42 L66,54 L62,49 L72,42 Z" />
+
+    <!-- Dynamic Jet Trail / Wind Streamers -->
+    <path
+        android:strokeAlpha="0.6"
+        android:strokeColor="#60A5FA"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M46,12 C36,15 26,24 22,34" />
+    <path
+        android:strokeAlpha="0.5"
+        android:strokeColor="#93C5FD"
+        android:strokeWidth="1.2"
+        android:strokeLineCap="round"
+        android:pathData="M48,18 C40,22 34,28 30,38" />
+
+    <!-- Little Sparkle Stars -->
+    <path
+        android:fillColor="#60A5FA"
+        android:pathData="M38,20 L40,24 L44,26 L40,28 L38,32 L36,28 L32,26 L36,24 Z" />
+    <path
+        android:fillColor="#93C5FD"
+        android:pathData="M136,18 L137,21 L140,22 L137,23 L136,26 L135,23 L132,22 L135,21 Z" />
+    <path
+        android:fillColor="#34D399"
+        android:pathData="M18,65 L19,67 L21,68 L19,69 L18,71 L17,69 L15,68 L17,67 Z" />
+
+</vector>

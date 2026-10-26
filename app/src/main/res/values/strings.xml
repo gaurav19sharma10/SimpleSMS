@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Simple SMS</string>
+    <string name="channel_sms_dispatch_id">sms_dispatch_channel</string>
+    <string name="channel_sms_dispatch_name">SMS Dispatch Progress</string>
+    <string name="channel_sms_dispatch_desc">Notifications showing progress when sending bulk SMS</string>
+    <string name="channel_sms_gateway_name">Web Remote Gateway</string>
+    <string name="channel_sms_gateway_desc">Maintains remote connection to send SMS from Web Platform</string>
+</resources>

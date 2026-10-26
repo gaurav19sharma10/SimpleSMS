@@ -1,0 +1,26 @@
+# Gradle & Build caches
+.gradle/
+build/
+*/build/
+app/build/
+bin/
+
+# Local config & SDK paths
+local.properties
+.idea/
+.idea/*
+*.iml
+.DS_Store
+
+# Android Studio & Output artifacts
+*.apk
+*.ap_
+*.aab
+*.dex
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Node & Editor
+node_modules/
+.vscode/

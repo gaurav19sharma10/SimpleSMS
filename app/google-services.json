@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "745784510495",
+    "project_id": "simple-sms-c22dc",
+    "storage_bucket": "simple-sms-c22dc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:745784510495:android:43c00d66a3837da689ed2a",
+        "android_client_info": {
+          "package_name": "com.simplesms.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDz-5D75VWnhjW200g-XLhPNfc5L6MA4jc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

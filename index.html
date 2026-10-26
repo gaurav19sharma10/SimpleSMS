@@ -1,0 +1,2604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple SMS — Send SMS from Computer via Android SIM</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- QR Code Generator Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Firebase App & Cloud Firestore SDK (v8) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#EFF6FF',
+              100: '#DBEAFE',
+              200: '#BFDBFE',
+              500: '#0057FF',
+              600: '#0047D4',
+              700: '#0038A8',
+            }
+          },
+          boxShadow: {
+            'xs': '0 1px 2px rgba(16, 24, 40, 0.05)',
+            'subtle': '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',
+            'card': '0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.02)',
+            'float': '0 12px 24px -4px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.03)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #F8F7F4;
+      color: #111827;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Laser animation for QR Code scanner */
+    @keyframes laserScan {
+      0% { top: 10%; opacity: 0.2; }
+      50% { top: 90%; opacity: 1; }
+      100% { top: 10%; opacity: 0.2; }
+    }
+    .laser-line {
+      animation: laserScan 2.4s ease-in-out infinite;
+    }
+
+    /* Pulse animation for Wi-Fi waves */
+    @keyframes wavePulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.96); }
+      50% { opacity: 1; transform: scale(1.04); }
+    }
+    .wave-pulse {
+      animation: wavePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D1D5DB;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9CA3AF;
+    }
+
+    .hero-gradient {
+      background: linear-gradient(135deg, #EBF5FF 0%, #EEF2FF 45%, #F5F3FF 100%);
+    }
+
+    .dropdown-menu {
+      display: none;
+    }
+    .dropdown-menu.show {
+      display: block;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#F8F7F4] text-[#111827]">
+
+  <!-- ===================================================================== -->
+  <!-- 1. PUBLIC WEBSITE HEADER (Shown on Home & Connect views)              -->
+  <!-- ===================================================================== -->
+  <header id="publicHeader" class="bg-white border-b border-[#E5E9F0] sticky top-0 z-40 px-5 lg:px-10 py-3.5 flex items-center justify-between shadow-xs">
+    <!-- Brand -->
+    <a href="#home" onclick="navigateTo('home'); return false;" class="flex items-center space-x-3 group">
+      <div class="w-10 h-10 rounded-xl bg-[#0057FF] flex items-center justify-center text-white shadow-sm transition transform group-hover:scale-105">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4.5 3.75h15c1.24 0 2.25 1.01 2.25 2.25v10.5c0 1.24-1.01 2.25-2.25 2.25H8.625L4.125 21.75V18.75H4.5c-1.24 0-2.25-1.01-2.25-2.25V6c0-1.24 1.01-2.25 2.25-2.25zM8 12a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5zm4 0a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5zm4 0a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="font-extrabold text-base tracking-tight text-[#111827]">Simple SMS</span>
+          <span class="bg-[#EFF6FF] text-[#0057FF] border border-[#BFDBFE] text-[10px] font-bold px-2 py-0.5 rounded-full">Desktop Gateway</span>
+        </div>
+        <p class="text-[11px] text-[#6B7280]">Send SMS from your Android phone's SIM</p>
+      </div>
+    </a>
+
+    <!-- Public Navigation Links & CTA -->
+    <div class="flex items-center space-x-6">
+      <nav class="hidden md:flex items-center space-x-6 text-xs font-semibold text-[#4B5563]">
+        <a href="#home" onclick="navigateTo('home'); return false;" class="hover:text-[#0057FF] transition">Home</a>
+        <a href="javascript:void(0)" onclick="openHowItWorksModal()" class="hover:text-[#0057FF] transition">How It Works</a>
+        <a href="javascript:void(0)" onclick="openFeatureExploreModal('security')" class="hover:text-[#0057FF] transition">Security & Privacy</a>
+      </nav>
+
+      <!-- Connect Phone CTA -->
+      <a href="#connect" onclick="navigateTo('connect'); return false;" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition flex items-center space-x-2">
+        <i class="fa-solid fa-qrcode text-sm"></i>
+        <span>Connect Phone</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- 2. AUTHENTICATED DASHBOARD HEADER (Shown only when phone is paired)   -->
+  <!-- ===================================================================== -->
+  <header id="dashboardHeader" class="hidden bg-white border-b border-[#E5E9F0] sticky top-0 z-40 px-5 lg:px-8 py-3 flex items-center justify-between shadow-xs">
+    
+    <!-- Brand -->
+    <div class="flex items-center space-x-3.5">
+      <a href="#dashboard" onclick="navigateTo('dashboard'); return false;" class="flex items-center space-x-3 group">
+        <div class="w-10 h-10 rounded-xl bg-[#0057FF] flex items-center justify-center text-white shadow-sm transition transform group-hover:scale-105">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4.5 3.75h15c1.24 0 2.25 1.01 2.25 2.25v10.5c0 1.24-1.01 2.25-2.25 2.25H8.625L4.125 21.75V18.75H4.5c-1.24 0-2.25-1.01-2.25-2.25V6c0-1.24 1.01-2.25 2.25-2.25zM8 12a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5zm4 0a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5zm4 0a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="font-extrabold text-base tracking-tight text-[#111827]">Simple SMS</h1>
+            <span class="bg-[#EFF6FF] text-[#0057FF] border border-[#BFDBFE] text-[11px] font-bold px-2 py-0.5 rounded-full">Desktop Gateway</span>
+          </div>
+          <p class="text-[11px] text-[#6B7280]">Send SMS from your Android phone's SIM</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Center/Right: Live Phone Status, Sync Refresh & Avatar -->
+    <div class="flex items-center space-x-3">
+
+      <!-- Live Phone Connection Status Pill -->
+      <div id="headerStatusPill" class="bg-white border border-[#E5E9F0] px-3.5 py-1.5 rounded-full flex items-center space-x-2.5 shadow-xs cursor-pointer hover:border-[#BFDBFE] transition" onclick="openDeviceStatusModal()">
+        <span class="relative flex h-2.5 w-2.5">
+          <span id="headerStatusPing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#16A36A] opacity-75"></span>
+          <span id="headerStatusDot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#16A36A]"></span>
+        </span>
+        <div class="text-left leading-tight">
+          <div class="text-xs font-bold text-[#111827]" id="headerStatusTitle">Phone Connected</div>
+          <div class="text-[10px] text-[#6B7280]" id="headerDeviceSub">Loading device data...</div>
+        </div>
+      </div>
+
+      <!-- Refresh / Sync Button -->
+      <button onclick="refreshPhoneData()" title="Sync phone status" class="w-9 h-9 rounded-xl border border-[#E5E9F0] bg-white hover:bg-slate-50 text-[#6B7280] hover:text-[#111827] flex items-center justify-center transition shadow-xs">
+        <i class="fa-solid fa-arrows-rotate text-xs" id="refreshIcon"></i>
+      </button>
+
+      <!-- Notification Bell -->
+      <button onclick="showToast('Cellular gateway active. Ready to dispatch SMS.', 'info')" title="Notifications" class="relative w-9 h-9 rounded-xl border border-[#E5E9F0] bg-white hover:bg-slate-50 text-[#6B7280] hover:text-[#111827] flex items-center justify-center transition shadow-xs">
+        <i class="fa-regular fa-bell text-sm"></i>
+      </button>
+
+      <!-- User Avatar Pill with Menu Dropdown -->
+      <div class="relative">
+        <button onclick="toggleProfileDropdown()" class="flex items-center space-x-1.5 bg-white border border-[#E5E9F0] pl-1 pr-2.5 py-1 rounded-full hover:bg-slate-50 transition shadow-xs">
+          <div class="w-7 h-7 rounded-full bg-[#0057FF] text-white font-bold text-xs flex items-center justify-center">
+            <i class="fa-solid fa-user text-xs"></i>
+          </div>
+          <i class="fa-solid fa-chevron-down text-[10px] text-[#6B7280]"></i>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div id="profileDropdown" class="dropdown-menu absolute right-0 mt-2 w-52 bg-white border border-[#E5E9F0] rounded-2xl shadow-float py-2 z-50">
+          <div class="px-4 py-2 border-b border-[#E5E9F0]">
+            <p class="text-xs font-bold text-[#111827]">Connected Device</p>
+            <p class="text-[10px] text-[#6B7280] font-mono truncate" id="menuDeviceName">Searching...</p>
+          </div>
+          <a href="javascript:void(0)" onclick="openDeviceStatusModal()" class="flex items-center px-4 py-2 text-xs text-[#374151] hover:bg-slate-50">
+            <i class="fa-solid fa-mobile-screen mr-2.5 text-[#0057FF] w-4"></i> Device & Battery Status
+          </a>
+          <a href="javascript:void(0)" onclick="openRulesModal()" class="flex items-center px-4 py-2 text-xs text-[#374151] hover:bg-slate-50">
+            <i class="fa-solid fa-shield-halved mr-2.5 text-[#D98A12] w-4"></i> Firestore Security Rules
+          </a>
+          <div class="border-t border-[#E5E9F0] my-1"></div>
+          <a href="javascript:void(0)" onclick="unlinkDeviceSession()" class="flex items-center px-4 py-2 text-xs text-[#E5484D] hover:bg-red-50">
+            <i class="fa-solid fa-arrow-right-from-bracket mr-2.5 w-4"></i> Disconnect Phone
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- 3. PAGE VIEW CONTAINER (Routing between Home, Connect, Dashboard)     -->
+  <!-- ===================================================================== -->
+  <div class="flex-1 flex overflow-hidden">
+
+    <!-- =================================================================== -->
+    <!-- VIEW A: HOME SCREEN / LANDING PAGE (Exact Match to Prompt)          -->
+    <!-- =================================================================== -->
+    <section id="viewHome" class="flex-1 overflow-y-auto p-5 lg:p-10 max-w-7xl mx-auto space-y-8">
+      
+      <!-- Top Hero Banner Card -->
+      <div class="bg-gradient-to-br from-[#EBF5FF] via-[#F4F8FF] to-white border border-[#DBEAFE] rounded-3xl p-8 lg:p-12 relative overflow-hidden shadow-sm">
+        
+        <!-- Soft background glow shapes -->
+        <div class="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-blue-200/20 blur-3xl pointer-events-none"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+          
+          <!-- Left 7 cols: Copy & CTAs -->
+          <div class="lg:col-span-7 space-y-6">
+            <span class="text-xs font-black tracking-wider text-[#0057FF] uppercase">WELCOME TO SIMPLE SMS</span>
+            <h1 class="text-3xl lg:text-4xl font-black text-[#111827] tracking-tight leading-tight">
+              Send SMS from your <span class="text-[#0057FF]">Android phone</span>, right from your computer.
+            </h1>
+            <p class="text-sm text-[#4B5563] leading-relaxed max-w-xl">
+              Messages are sent using your phone's physical SIM card. No extra cost. No third-party services. Keep your data private.
+            </p>
+
+            <!-- Buttons -->
+            <div class="flex items-center gap-3 pt-1">
+              <a href="#connect" onclick="navigateTo('connect'); return false;" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-sm px-6 py-3.5 rounded-xl flex items-center space-x-2 shadow-xs transition">
+                <i class="fa-solid fa-qrcode text-base"></i>
+                <span>Connect your phone</span>
+                <i class="fa-solid fa-chevron-right text-xs ml-1"></i>
+              </a>
+              <button onclick="openHowItWorksModal()" class="bg-white hover:bg-slate-50 text-[#111827] border border-[#E5E9F0] font-bold text-sm px-5 py-3.5 rounded-xl transition flex items-center space-x-2">
+                <i class="fa-regular fa-circle-play text-[#0057FF]"></i>
+                <span>How it works</span>
+              </button>
+            </div>
+
+            <!-- 4 Feature Pills -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-[#E5E9F0]/80">
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-bolt text-[#0057FF] text-xs"></i>
+                <span class="text-xs font-semibold text-[#374151]">Uses your phone's SIM</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-shield-halved text-[#16A36A] text-xs"></i>
+                <span class="text-xs font-semibold text-[#374151]">End-to-end encrypted</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-arrows-rotate text-[#D98A12] text-xs"></i>
+                <span class="text-xs font-semibold text-[#374151]">Real-time delivery status</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-wand-magic-sparkles text-[#9333EA] text-xs"></i>
+                <span class="text-xs font-semibold text-[#374151]">Powerful tools & automation</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right 5 cols: Vector Workspace Artwork Scene (SVG) -->
+          <div class="lg:col-span-5 flex items-center justify-center">
+            <svg class="w-full max-w-[390px] h-auto drop-shadow-md select-none" viewBox="0 0 380 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="190" cy="180" rx="170" ry="12" fill="#0057FF" fill-opacity="0.07" />
+
+              <!-- Desk coffee mug -->
+              <rect x="42" y="145" width="22" height="26" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+              <path d="M42 152 C34 152 34 165 42 165" stroke="#CBD5E1" stroke-width="2" fill="none"/>
+
+              <!-- Succulent Plant in Pot -->
+              <path d="M328 152 L344 152 L341 172 L331 172 Z" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="1"/>
+              <circle cx="336" cy="148" r="7" fill="#16A36A"/>
+              <circle cx="332" cy="144" r="5" fill="#22C55E"/>
+              <circle cx="340" cy="144" r="5" fill="#22C55E"/>
+
+              <!-- LAPTOP WORKSPACE -->
+              <g id="home_laptop">
+                <path d="M75 152 L250 152 L265 159 L60 159 Z" fill="#CBD5E1" stroke="#94A3B8" stroke-width="1.5" />
+                <path d="M135 153 L190 153 L188 158 L137 158 Z" fill="#94A3B8" />
+                <rect x="80" y="55" width="165" height="98" rx="6" fill="#1E293B" stroke="#0F172A" stroke-width="2"/>
+                <rect x="84" y="59" width="157" height="90" rx="3" fill="#FFFFFF"/>
+                
+                <!-- Laptop Screen Header -->
+                <rect x="84" y="59" width="157" height="12" fill="#0057FF"/>
+                <circle cx="91" cy="65" r="2" fill="#FFFFFF"/>
+                <rect x="96" y="63" width="28" height="4" rx="2" fill="#FFFFFF"/>
+
+                <!-- Left Sidebar -->
+                <rect x="84" y="71" width="38" height="78" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="0.5"/>
+                <rect x="88" y="76" width="30" height="4" rx="1" fill="#0057FF"/>
+                <rect x="88" y="83" width="24" height="3" rx="1" fill="#CBD5E1"/>
+                <rect x="88" y="89" width="26" height="3" rx="1" fill="#CBD5E1"/>
+
+                <!-- Message Window on laptop -->
+                <rect x="130" y="76" width="95" height="36" rx="5" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+                <rect x="136" y="83" width="70" height="4" rx="2" fill="#0057FF"/>
+                <rect x="136" y="91" width="82" height="3" rx="1.5" fill="#94A3B8"/>
+                <rect x="136" y="97" width="55" height="3" rx="1.5" fill="#CBD5E1"/>
+              </g>
+
+              <!-- WIRELESS SYNC RADIO WAVES -->
+              <g class="wave-pulse">
+                <path d="M260 62 A 18 18 0 0 1 278 80" stroke="#0057FF" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.4"/>
+                <path d="M264 55 A 28 28 0 0 1 292 83" stroke="#0057FF" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+                <path d="M268 48 A 38 38 0 0 1 306 86" stroke="#0057FF" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                <circle cx="260" cy="80" r="2.5" fill="#0057FF"/>
+              </g>
+
+              <!-- STANDING ANDROID SMARTPHONE -->
+              <g id="home_phone">
+                <ellipse cx="295" cy="168" rx="24" ry="5" fill="#1E293B" fill-opacity="0.15" />
+                <rect x="272" y="70" width="46" height="95" rx="9" fill="#1E293B" stroke="#0F172A" stroke-width="2"/>
+                <rect x="275" y="74" width="40" height="87" rx="6" fill="#111827"/>
+                
+                <!-- Android Robot on Screen -->
+                <g transform="translate(283, 98) scale(0.65)">
+                  <path d="M6 14 A 12 12 0 0 1 30 14 Z" fill="#16A36A"/>
+                  <circle cx="12" cy="10" r="1.5" fill="#FFFFFF"/>
+                  <circle cx="24" cy="10" r="1.5" fill="#FFFFFF"/>
+                  <line x1="10" y1="5" x2="6" y2="1" stroke="#16A36A" stroke-width="1.5" stroke-linecap="round"/>
+                  <line x1="26" y1="5" x2="30" y2="1" stroke="#16A36A" stroke-width="1.5" stroke-linecap="round"/>
+                  <rect x="6" y="16" width="24" height="18" rx="3" fill="#16A36A"/>
+                  <rect x="1" y="16" width="3.5" height="13" rx="1.7" fill="#16A36A"/>
+                  <rect x="31.5" y="16" width="3.5" height="13" rx="1.7" fill="#16A36A"/>
+                </g>
+              </g>
+            </svg>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bottom 2-Column Grid: 3 Steps + What You Can Do -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Left Card: Get started in 3 simple steps -->
+        <div class="bg-white border border-[#E5E9F0] rounded-3xl p-7 shadow-xs space-y-6 flex flex-col justify-between">
+          <div class="space-y-5">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-2xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-lg shadow-xs">
+                <i class="fa-solid fa-rocket"></i>
+              </div>
+              <div>
+                <h3 class="font-extrabold text-base text-[#111827]">Get started in 3 simple steps</h3>
+                <p class="text-xs text-[#6B7280]">Connect your computer in less than 30 seconds</p>
+              </div>
+            </div>
+
+            <!-- Steps timeline -->
+            <div class="space-y-4 pt-2">
+              <div class="flex items-start space-x-3.5">
+                <span class="w-7 h-7 rounded-lg bg-[#EFF6FF] text-[#0057FF] font-bold text-xs flex items-center justify-center shrink-0">1</span>
+                <div>
+                  <h4 class="text-xs font-bold text-[#111827]">Open Simple SMS on your Android phone</h4>
+                  <p class="text-[11px] text-[#6B7280] mt-0.5">Ensure your phone has an active cellular SIM card inserted.</p>
+                </div>
+              </div>
+
+              <div class="flex items-start space-x-3.5">
+                <span class="w-7 h-7 rounded-lg bg-[#EFF6FF] text-[#0057FF] font-bold text-xs flex items-center justify-center shrink-0">2</span>
+                <div>
+                  <h4 class="text-xs font-bold text-[#111827]">Tap "Web Remote Gateway" tab</h4>
+                  <p class="text-[11px] text-[#6B7280] mt-0.5">Tap the dedicated desktop gateway option on your phone.</p>
+                </div>
+              </div>
+
+              <div class="flex items-start space-x-3.5">
+                <span class="w-7 h-7 rounded-lg bg-[#EFF6FF] text-[#0057FF] font-bold text-xs flex items-center justify-center shrink-0">3</span>
+                <div>
+                  <h4 class="text-xs font-bold text-[#111827]">Scan the QR code shown on this computer</h4>
+                  <p class="text-[11px] text-[#6B7280] mt-0.5">Your phone links securely and opens your SMS management workspace.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <a href="#connect" onclick="navigateTo('connect'); return false;" class="w-full bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs py-3 rounded-xl shadow-xs transition flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-qrcode"></i>
+            <span>Connect your phone now</span>
+            <i class="fa-solid fa-arrow-right text-[10px] ml-1"></i>
+          </a>
+        </div>
+
+        <!-- Right Card: What you can do (6 Interactive Feature Tiles) -->
+        <div class="bg-white border border-[#E5E9F0] rounded-3xl p-7 shadow-xs space-y-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-lg shadow-xs">
+              <i class="fa-solid fa-table-cells-large"></i>
+            </div>
+            <div>
+              <h3 class="font-extrabold text-base text-[#111827]">What you can do</h3>
+              <p class="text-xs text-[#6B7280]">Full SMS management from any computer browser</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 pt-2">
+            <div onclick="openFeatureExploreModal('send')" class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0057FF] rounded-2xl cursor-pointer transition space-y-1">
+              <i class="fa-solid fa-paper-plane text-[#0057FF] text-sm"></i>
+              <h5 class="font-bold text-xs text-[#111827]">Send SMS</h5>
+              <p class="text-[10px] text-[#6B7280]">Type on your computer, send through phone SIM.</p>
+            </div>
+
+            <div onclick="openFeatureExploreModal('contacts')" class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0057FF] rounded-2xl cursor-pointer transition space-y-1">
+              <i class="fa-solid fa-user-group text-[#16A36A] text-sm"></i>
+              <h5 class="font-bold text-xs text-[#111827]">Manage Contacts</h5>
+              <p class="text-[10px] text-[#6B7280]">Pick contacts or import recipient lists.</p>
+            </div>
+
+            <div onclick="openFeatureExploreModal('templates')" class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0057FF] rounded-2xl cursor-pointer transition space-y-1">
+              <i class="fa-solid fa-file-lines text-[#9333EA] text-sm"></i>
+              <h5 class="font-bold text-xs text-[#111827]">Use Templates</h5>
+              <p class="text-[10px] text-[#6B7280]">Save reusable messages with {name} tags.</p>
+            </div>
+
+            <div onclick="openFeatureExploreModal('broadcast')" class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0057FF] rounded-2xl cursor-pointer transition space-y-1">
+              <i class="fa-solid fa-bullhorn text-[#D97706] text-sm"></i>
+              <h5 class="font-bold text-xs text-[#111827]">Send to Groups</h5>
+              <p class="text-[10px] text-[#6B7280]">Broadcast announcements with pacing.</p>
+            </div>
+
+            <div onclick="openFeatureExploreModal('schedule')" class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0057FF] rounded-2xl cursor-pointer transition space-y-1">
+              <i class="fa-solid fa-calendar-days text-[#0284C7] text-sm"></i>
+              <h5 class="font-bold text-xs text-[#111827]">Schedule SMS</h5>
+              <p class="text-[10px] text-[#6B7280]">Prepare messages to send at a future date.</p>
+            </div>
+
+            <div onclick="openFeatureExploreModal('reports')" class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0057FF] rounded-2xl cursor-pointer transition space-y-1">
+              <i class="fa-solid fa-chart-simple text-[#0057FF] text-sm"></i>
+              <h5 class="font-bold text-xs text-[#111827]">View Reports</h5>
+              <p class="text-[10px] text-[#6B7280]">Track real-time carrier delivery status.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Security Banner -->
+      <div class="bg-[#F0FDF4] border border-[#BBF7D0] rounded-2xl p-4 flex items-center space-x-3 text-xs text-[#166534]">
+        <i class="fa-solid fa-lock text-sm text-[#16A36A]"></i>
+        <span>
+          <strong>Your data stays on your phone.</strong> We only dispatch messages through your connected Android device using your SIM card. No third-party services. No hidden monthly charges.
+        </span>
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW B: QR CODE PAIRING PAGE                                        -->
+    <!-- =================================================================== -->
+    <section id="viewPairing" class="hidden flex-1 overflow-y-auto p-5 lg:p-10 max-w-4xl mx-auto space-y-6">
+      
+      <div class="bg-white border border-[#E5E9F0] rounded-3xl p-8 shadow-xs space-y-6">
+        
+        <div class="flex items-center justify-between pb-4 border-b border-[#E5E9F0]">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-lg shadow-xs">
+              <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <div>
+              <h3 class="font-extrabold text-lg text-[#111827]">Connect Simple SMS App</h3>
+              <p class="text-xs text-[#6B7280]">Scan this QR code with the Simple SMS Android app on your phone</p>
+            </div>
+          </div>
+          
+          <a href="#home" onclick="navigateTo('home'); return false;" class="text-xs font-bold text-[#6B7280] hover:text-[#111827] bg-[#F1F5F9] px-3.5 py-2 rounded-xl transition">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Back to Home
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          
+          <!-- Instructions (7 cols) -->
+          <div class="md:col-span-7 space-y-4">
+            <div class="flex items-start space-x-3.5">
+              <span class="w-7 h-7 rounded-lg bg-[#EFF6FF] text-[#0057FF] font-bold text-xs flex items-center justify-center shrink-0">1</span>
+              <div>
+                <h5 class="text-xs font-bold text-[#111827]">Open Simple SMS on your Android phone</h5>
+                <p class="text-[11px] text-[#6B7280] mt-0.5">Ensure active cellular SIM cards are inserted.</p>
+              </div>
+            </div>
+
+            <div class="flex items-start space-x-3.5">
+              <span class="w-7 h-7 rounded-lg bg-[#EFF6FF] text-[#0057FF] font-bold text-xs flex items-center justify-center shrink-0">2</span>
+              <div>
+                <h5 class="text-xs font-bold text-[#111827]">Tap "Web Remote Gateway"</h5>
+                <p class="text-[11px] text-[#6B7280] mt-0.5">Tap "Connect a Computer" to launch the CameraX scanner.</p>
+              </div>
+            </div>
+
+            <div class="flex items-start space-x-3.5">
+              <span class="w-7 h-7 rounded-lg bg-[#EFF6FF] text-[#0057FF] font-bold text-xs flex items-center justify-center shrink-0">3</span>
+              <div>
+                <h5 class="text-xs font-bold text-[#111827]">Point your camera at this QR code</h5>
+                <p class="text-[11px] text-[#6B7280] mt-0.5">Your phone binds and opens your live SMS dashboard automatically.</p>
+              </div>
+            </div>
+
+            <div class="p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[11px] text-[#6B7280] flex items-center gap-2.5">
+              <i class="fa-solid fa-shield-halved text-[#16A36A] text-sm"></i>
+              <span>Hardware-paired via Google Cloud Firestore with zero third-party intermediaries.</span>
+            </div>
+          </div>
+
+          <!-- QR Code Display (5 cols) -->
+          <div class="md:col-span-5 flex flex-col items-center justify-center">
+            <div class="bg-white p-4 rounded-2xl border border-[#E5E9F0] shadow-sm relative min-w-[210px] min-h-[210px] flex items-center justify-center">
+              <div class="absolute inset-x-4 top-4 h-0.5 bg-gradient-to-r from-transparent via-[#0057FF] to-transparent laser-line pointer-events-none z-10"></div>
+              <div id="qrcode" class="w-[180px] h-[180px] flex items-center justify-center"></div>
+            </div>
+
+            <div class="mt-4 text-center">
+              <div class="inline-flex items-center gap-2 text-xs font-bold text-[#0057FF] bg-[#EFF6FF] px-3.5 py-1.5 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-[#0057FF] animate-ping"></span>
+                <span id="qrStatusText">Waiting for phone scan...</span>
+              </div>
+              <p class="text-[10px] text-[#9CA3AF] mt-2 font-mono">Session ID: <span id="displaySessionId" class="text-[#0057FF]">generating...</span></p>
+              
+              <button onclick="generateNewPairingSession()" class="text-xs font-bold text-[#0057FF] hover:underline mt-2 inline-flex items-center gap-1.5">
+                <i class="fa-solid fa-arrows-rotate"></i>
+                <span>Refresh QR Code</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW C: AUTHENTICATED DASHBOARD (Sidebar + Main Workspace)          -->
+    <!-- =================================================================== -->
+    <div id="viewDashboardWrapper" class="hidden flex-1 flex overflow-hidden w-full">
+      
+      <!-- Left Sidebar Navigation -->
+      <aside class="w-64 bg-white border-r border-[#E5E9F0] flex flex-col justify-between p-4 overflow-y-auto shrink-0 select-none">
+        <div class="space-y-6">
+
+          <!-- Category 1: Main Workspaces -->
+          <nav class="space-y-1">
+            <a href="#dashboard" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-bold text-xs bg-[#EBF3FF] text-[#0057FF] transition">
+              <i class="fa-solid fa-gauge-high w-4 text-sm"></i>
+              <span>Dashboard</span>
+            </a>
+            <a href="javascript:void(0)" onclick="focusMessageComposer()" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-paper-plane w-4 text-sm text-[#6B7280]"></i>
+              <span>Send SMS</span>
+            </a>
+            <a href="javascript:void(0)" onclick="openContactsModal()" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-user-group w-4 text-sm text-[#6B7280]"></i>
+              <span>Contacts</span>
+            </a>
+            <a href="javascript:void(0)" onclick="openTemplatesModal()" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-file-lines w-4 text-sm text-[#6B7280]"></i>
+              <span>Templates</span>
+            </a>
+            <a href="javascript:void(0)" onclick="openBroadcastModal()" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-bullhorn w-4 text-sm text-[#6B7280]"></i>
+              <span>Broadcast</span>
+            </a>
+            <a href="javascript:void(0)" onclick="openScheduleModal()" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-calendar-days w-4 text-sm text-[#6B7280]"></i>
+              <span>Scheduled</span>
+            </a>
+            <a href="javascript:void(0)" onclick="openMessageHistoryModal()" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-clock-rotate-left w-4 text-sm text-[#6B7280]"></i>
+              <span>Message History</span>
+            </a>
+          </nav>
+
+          <!-- Category 2: DEVICE & CONNECTION -->
+          <div class="space-y-1">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF] px-3.5 mb-2">Device & Connection</p>
+            <a href="javascript:void(0)" onclick="openDeviceStatusModal()" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-mobile-screen-button w-4 text-sm text-[#6B7280]"></i>
+              <span>Device Status</span>
+            </a>
+            <a href="javascript:void(0)" onclick="openDeviceStatusModal()" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-sim-card w-4 text-sm text-[#6B7280]"></i>
+              <span>SIM Management</span>
+            </a>
+            <a href="javascript:void(0)" onclick="openDeviceStatusModal()" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-link w-4 text-sm text-[#6B7280]"></i>
+              <span>Connection Settings</span>
+            </a>
+            <a href="#connect" onclick="navigateTo('connect'); return false;" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-desktop w-4 text-sm text-[#6B7280]"></i>
+              <span>Web Remote Gateway</span>
+            </a>
+          </div>
+
+          <!-- Category 3: TOOLS & INSIGHTS -->
+          <div class="space-y-1">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF] px-3.5 mb-2">Tools & Insights</p>
+            <a href="javascript:void(0)" onclick="openDeliveryReportsModal()" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-chart-simple w-4 text-sm text-[#6B7280]"></i>
+              <span>Delivery Reports</span>
+            </a>
+            <a href="javascript:void(0)" onclick="openDeliveryReportsModal()" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-chart-pie w-4 text-sm text-[#6B7280]"></i>
+              <span>Analytics</span>
+            </a>
+          </div>
+
+          <!-- Category 4: SETTINGS -->
+          <div class="space-y-1">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF] px-3.5 mb-2">Settings</p>
+            <a href="javascript:void(0)" onclick="openDeviceStatusModal()" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-solid fa-gear w-4 text-sm text-[#6B7280]"></i>
+              <span>App Settings</span>
+            </a>
+            <a href="#home" onclick="navigateTo('home'); return false;" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+              <i class="fa-regular fa-circle-question w-4 text-sm text-[#6B7280]"></i>
+              <span>Help & Support</span>
+            </a>
+          </div>
+
+        </div>
+
+        <!-- Pro Promo Card -->
+        <div class="bg-[#FFFBEB] border border-[#FDE68A] rounded-2xl p-4 mt-6">
+          <div class="w-8 h-8 rounded-xl bg-[#FEF3C7] text-[#D97706] flex items-center justify-center shadow-xs">
+            <i class="fa-solid fa-crown text-sm"></i>
+          </div>
+          <h4 class="font-bold text-xs text-[#111827] mt-2.5">Simple SMS Pro</h4>
+          <p class="text-[11px] text-[#6B7280] mt-1 leading-snug">
+            Unlock advanced features like scheduled SMS, contact groups, and more.
+          </p>
+          <button onclick="openProModal()" class="mt-3 w-full bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs py-2 px-3 rounded-lg shadow-xs transition">
+            Upgrade Now
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Dashboard Content -->
+      <main class="flex-1 overflow-y-auto p-5 lg:p-7 space-y-6 max-w-[1550px] mx-auto">
+        
+        <!-- Top Wide Hero Banner Card -->
+        <section class="hero-gradient rounded-3xl border border-[#DBEAFE] p-6 lg:p-8 relative overflow-hidden shadow-xs">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+            <div class="lg:col-span-7 space-y-4">
+              <div>
+                <span class="text-[11px] font-black tracking-wider text-[#0057FF] uppercase">WELCOME BACK,</span>
+                <h2 class="text-2xl lg:text-3xl font-black text-[#111827] tracking-tight mt-1">
+                  Send SMS from your computer
+                </h2>
+                <p class="text-xs lg:text-sm text-[#4B5563] mt-1">
+                  Your Android phone's SIM card. More control. More productivity.
+                </p>
+              </div>
+
+              <!-- 4 Feature Pills -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-8 h-8 rounded-full bg-[#16A36A] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <i class="fa-solid fa-bolt text-xs"></i>
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-bold text-[#111827]">Fast & Reliable</h5>
+                    <p class="text-[10px] text-[#6B7280]">Uses your phone's SIM</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-8 h-8 rounded-full bg-[#6558F5] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <i class="fa-solid fa-shield-halved text-xs"></i>
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-bold text-[#111827]">Secure Connection</h5>
+                    <p class="text-[10px] text-[#6B7280]">End-to-end encrypted</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-8 h-8 rounded-full bg-[#EA580C] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <i class="fa-solid fa-mobile-screen text-xs"></i>
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-bold text-[#111827]">Real-time Sync</h5>
+                    <p class="text-[10px] text-[#6B7280]">Live delivery status</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-8 h-8 rounded-full bg-[#0284C7] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                  </div>
+                  <div>
+                    <h5 class="text-xs font-bold text-[#111827]">Powerful Tools</h5>
+                    <p class="text-[10px] text-[#6B7280]">Templates, scheduling & more</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Vector Poster Artwork (Laptop + Phone + Wi-Fi waves) -->
+            <div class="lg:col-span-5 flex items-center justify-center lg:justify-end">
+              <svg class="w-full max-w-[360px] h-auto drop-shadow-md select-none" viewBox="0 0 380 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="190" cy="165" rx="160" ry="10" fill="#0057FF" fill-opacity="0.08" />
+                
+                <!-- Laptop -->
+                <path d="M75 142 L250 142 L265 148 L60 148 Z" fill="#CBD5E1" stroke="#94A3B8" stroke-width="1.5" />
+                <path d="M135 143 L190 143 L188 147 L137 147 Z" fill="#94A3B8" />
+                <rect x="80" y="45" width="165" height="98" rx="6" fill="#1E293B" stroke="#0F172A" stroke-width="2"/>
+                <rect x="84" y="49" width="157" height="90" rx="3" fill="#FFFFFF"/>
+                <rect x="84" y="49" width="157" height="12" fill="#0057FF"/>
+                <circle cx="91" cy="55" r="2" fill="#FFFFFF"/>
+                <rect x="96" y="53" width="28" height="4" rx="2" fill="#FFFFFF"/>
+                <rect x="84" y="61" width="38" height="78" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="0.5"/>
+                <rect x="88" y="66" width="30" height="4" rx="1" fill="#0057FF"/>
+                <rect x="130" y="66" width="95" height="36" rx="5" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+                <rect x="136" y="73" width="70" height="4" rx="2" fill="#0057FF"/>
+
+                <!-- Wi-Fi Sync Arcs -->
+                <g class="wave-pulse">
+                  <path d="M260 52 A 18 18 0 0 1 278 70" stroke="#0057FF" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.4"/>
+                  <path d="M264 45 A 28 28 0 0 1 292 73" stroke="#0057FF" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+                  <path d="M268 38 A 38 38 0 0 1 306 76" stroke="#0057FF" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                  <circle cx="260" cy="70" r="2.5" fill="#0057FF"/>
+                </g>
+
+                <!-- Phone with Android green robot -->
+                <ellipse cx="295" cy="155" rx="24" ry="5" fill="#1E293B" fill-opacity="0.15" />
+                <rect x="272" y="60" width="46" height="92" rx="9" fill="#1E293B" stroke="#0F172A" stroke-width="2"/>
+                <rect x="275" y="64" width="40" height="84" rx="6" fill="#111827"/>
+                <g transform="translate(283, 86) scale(0.65)">
+                  <path d="M6 14 A 12 12 0 0 1 30 14 Z" fill="#16A36A"/>
+                  <circle cx="12" cy="10" r="1.5" fill="#FFFFFF"/>
+                  <circle cx="24" cy="10" r="1.5" fill="#FFFFFF"/>
+                  <line x1="10" y1="5" x2="6" y2="1" stroke="#16A36A" stroke-width="1.5" stroke-linecap="round"/>
+                  <line x1="26" y1="5" x2="30" y2="1" stroke="#16A36A" stroke-width="1.5" stroke-linecap="round"/>
+                  <rect x="6" y="16" width="24" height="18" rx="3" fill="#16A36A"/>
+                  <rect x="1" y="16" width="3.5" height="13" rx="1.7" fill="#16A36A"/>
+                  <rect x="31.5" y="16" width="3.5" height="13" rx="1.7" fill="#16A36A"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <!-- Middle 3 Status Cards (Real data from paired phone) -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          
+          <!-- Card 1: Real Device Info -->
+          <div class="bg-white border border-[#E5E9F0] rounded-2xl p-4 shadow-xs flex items-center space-x-4">
+            <!-- Realistic Phone Graphic -->
+            <div class="w-16 h-28 bg-[#111827] rounded-xl p-1 shrink-0 relative shadow-sm border border-[#374151]">
+              <div class="w-full h-full rounded-lg overflow-hidden relative flex flex-col justify-between" style="background: linear-gradient(135deg, #4F46E5 0%, #EC4899 50%, #06B6D4 100%);">
+                <div class="flex justify-center pt-0.5"><div class="w-2.5 h-1 bg-[#111827] rounded-full"></div></div>
+                <div class="flex items-center justify-between px-1 text-[6px] text-white font-mono opacity-80">
+                  <span id="screenMiniTime">12:00</span>
+                  <span>SIM</span>
+                </div>
+                <div class="flex justify-center items-center py-2"><i class="fa-solid fa-comment-sms text-white/70 text-xs"></i></div>
+                <div class="flex justify-center pb-0.5"><div class="w-4 h-0.5 bg-white/60 rounded-full"></div></div>
+              </div>
+            </div>
+
+            <!-- Phone Telemetry -->
+            <div class="flex-1 min-w-0 space-y-1">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <h4 class="font-extrabold text-sm text-[#111827] truncate" id="dashDeviceModel">Loading...</h4>
+                  <span class="bg-[#F0FDF4] text-[#16A36A] border border-[#BBF7D0] text-[10px] font-bold px-2 py-0.5 rounded-full" id="dashDeviceStatusBadge">Online</span>
+                </div>
+                <button onclick="openDeviceStatusModal()" class="text-[#9CA3AF] hover:text-[#111827] transition" title="Device Details">
+                  <i class="fa-solid fa-gear text-xs"></i>
+                </button>
+              </div>
+
+              <p class="text-xs text-[#6B7280]" id="dashDeviceOs">Checking OS...</p>
+
+              <div class="pt-1 flex items-center space-x-1.5 flex-wrap">
+                <span class="text-xs font-bold text-[#111827]" id="dashSimTag">Cellular SIM</span>
+                <span class="bg-[#EFF6FF] text-[#0057FF] text-[10px] font-bold px-1.5 py-0.2 rounded" id="dashSimStateBadge">Active</span>
+              </div>
+
+              <p class="text-[11px] text-[#6B7280] font-mono" id="dashPhoneNum">SIM Phone Number</p>
+
+              <div class="flex items-center space-x-2 pt-0.5 text-xs text-[#6B7280]">
+                <span>Battery</span>
+                <div class="flex items-center space-x-1 font-bold text-[#111827]">
+                  <i class="fa-solid fa-battery-three-quarters text-[#16A36A]" id="dashBatteryIcon"></i>
+                  <span id="dashBatteryPct">--%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Connection Status -->
+          <div class="bg-white border border-[#E5E9F0] rounded-2xl p-5 shadow-xs flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-2xl bg-[#F0FDF4] text-[#16A36A] flex items-center justify-center text-lg shrink-0 border border-[#DCFCE7]">
+              <i class="fa-solid fa-wifi"></i>
+            </div>
+            <div>
+              <p class="text-xs font-medium text-[#6B7280]">Connection Status</p>
+              <h4 class="font-extrabold text-sm text-[#16A36A] flex items-center gap-1.5 mt-0.5" id="dashConnState">
+                <span class="w-2 h-2 rounded-full bg-[#16A36A]"></span> Connected
+              </h4>
+              <p class="text-[11px] text-[#9CA3AF] mt-1" id="dashLastSync">Last synced: Just now</p>
+            </div>
+          </div>
+
+          <!-- Card 3: Transmission Mode -->
+          <div class="bg-white border border-[#E5E9F0] rounded-2xl p-5 shadow-xs flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-2xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-lg shrink-0 border border-[#DBEAFE]">
+              <i class="fa-solid fa-tower-broadcast"></i>
+            </div>
+            <div>
+              <p class="text-xs font-medium text-[#6B7280]">Transmission Mode</p>
+              <h4 class="font-extrabold text-sm text-[#111827] mt-0.5">Physical SIM</h4>
+              <p class="text-[11px] text-[#6B7280] mt-1">Messages are sent via your phone's cellular SIM.</p>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- Bottom Split: Compose SMS & Right Widgets -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <!-- LEFT 8 COLS: Compose SMS Workspace Card -->
+          <div class="lg:col-span-8 bg-white border border-[#E5E9F0] rounded-3xl p-6 shadow-xs space-y-5">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
+              <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-base shadow-xs">
+                  <i class="fa-solid fa-paper-plane -rotate-12"></i>
+                </div>
+                <h3 class="font-extrabold text-base text-[#111827]">Compose SMS</h3>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <button onclick="clearComposer()" class="text-xs font-bold px-3 py-1.5 rounded-lg text-[#E5484D] bg-[#FFF0F0] hover:bg-[#FFE5E5] border border-[#FCA5A5]/30 transition">
+                  <i class="fa-regular fa-trash-can mr-1"></i> Clear All
+                </button>
+                <button onclick="saveCurrentAsTemplate()" class="text-xs font-bold px-3 py-1.5 rounded-lg text-[#0057FF] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] transition">
+                  <i class="fa-regular fa-bookmark mr-1"></i> Save as Template
+                </button>
+                <button onclick="openScheduleModal()" class="text-xs font-bold px-3 py-1.5 rounded-lg text-[#0057FF] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] transition">
+                  <i class="fa-regular fa-calendar mr-1"></i> Schedule
+                </button>
+              </div>
+            </div>
+
+            <!-- Recipients -->
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-[#111827]">Recipients</label>
+              <div class="flex items-center space-x-2">
+                <button id="btnRecipMode_numbers" onclick="setRecipientMode('numbers')" class="px-3.5 py-1.5 rounded-lg font-bold text-xs bg-[#0057FF] text-white shadow-xs transition">
+                  <i class="fa-solid fa-phone mr-1.5 text-[10px]"></i> Enter Numbers
+                </button>
+                <button onclick="openContactsModal()" class="px-3.5 py-1.5 rounded-lg font-medium text-xs bg-white text-[#4B5563] border border-[#E5E9F0] hover:bg-slate-50 transition">
+                  <i class="fa-solid fa-user-group mr-1.5 text-[10px]"></i> Select from Contacts
+                </button>
+                <button onclick="openBroadcastModal()" class="px-3.5 py-1.5 rounded-lg font-medium text-xs bg-white text-[#4B5563] border border-[#E5E9F0] hover:bg-slate-50 transition">
+                  <i class="fa-solid fa-users mr-1.5 text-[10px]"></i> Select Group
+                </button>
+              </div>
+
+              <div class="relative flex items-center">
+                <i class="fa-solid fa-phone absolute left-3.5 text-xs text-[#9CA3AF]"></i>
+                <input type="text" id="recipientInput" placeholder="Enter phone numbers separated by commas..."
+                  class="w-full bg-[#FAFAFA] border border-[#E5E9F0] rounded-xl pl-9 pr-36 py-2.5 text-xs font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#0057FF] focus:border-transparent transition">
+                <button onclick="openContactsModal()" class="absolute right-2 px-2.5 py-1 rounded-lg text-xs font-bold text-[#0057FF] hover:bg-[#EFF6FF] transition flex items-center gap-1.5">
+                  <i class="fa-solid fa-user-plus text-[10px]"></i> Add from Contacts
+                </button>
+              </div>
+              <p class="text-[11px] text-[#6B7280]">Include country code for international numbers. Example: +91 9876543210, +1 555 123 4567</p>
+            </div>
+
+            <!-- Quick Templates Chips -->
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-[#111827]">Quick Templates</label>
+              <div class="flex items-center gap-2 flex-wrap" id="quickTemplatesChips">
+                <!-- Loaded from templates store -->
+              </div>
+            </div>
+
+            <!-- Message Content -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold text-[#111827]">Message Content</label>
+                <div class="flex items-center space-x-2 relative">
+                  <!-- Tag Dropdown -->
+                  <div class="relative">
+                    <button onclick="toggleTagDropdown()" class="flex items-center space-x-1 text-xs font-bold text-[#0057FF] bg-[#EFF6FF] border border-[#BFDBFE] px-2.5 py-1 rounded-lg hover:bg-[#DBEAFE] transition">
+                      <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i>
+                      <span>Insert Tag</span>
+                      <i class="fa-solid fa-chevron-down text-[9px] ml-1"></i>
+                    </button>
+                    <div id="tagDropdown" class="dropdown-menu absolute right-0 mt-1 w-44 bg-white border border-[#E5E9F0] rounded-xl shadow-card py-1.5 z-30">
+                      <button onclick="insertTagIntoMessage('{name}')" class="w-full text-left px-3 py-1.5 text-xs text-[#374151] hover:bg-slate-50 font-mono flex items-center justify-between">
+                        <span>{name}</span><span class="text-[10px] text-gray-400 font-sans">Contact Name</span>
+                      </button>
+                      <button onclick="insertTagIntoMessage('{phone}')" class="w-full text-left px-3 py-1.5 text-xs text-[#374151] hover:bg-slate-50 font-mono flex items-center justify-between">
+                        <span>{phone}</span><span class="text-[10px] text-gray-400 font-sans">Phone</span>
+                      </button>
+                      <button onclick="insertTagIntoMessage('{date}')" class="w-full text-left px-3 py-1.5 text-xs text-[#374151] hover:bg-slate-50 font-mono flex items-center justify-between">
+                        <span>{date}</span><span class="text-[10px] text-gray-400 font-sans">Today</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Emoji Popover -->
+                  <div class="relative">
+                    <button onclick="toggleEmojiPicker()" class="w-7 h-7 rounded-lg border border-[#E5E9F0] text-[#6B7280] hover:text-[#111827] hover:bg-slate-50 flex items-center justify-center transition">
+                      <i class="fa-regular fa-face-smile text-sm"></i>
+                    </button>
+                    <div id="emojiPicker" class="dropdown-menu absolute right-0 mt-1 w-64 bg-white border border-[#E5E9F0] rounded-2xl shadow-card p-3 z-30">
+                      <p class="text-[11px] font-bold text-[#6B7280] mb-2">Emojis</p>
+                      <div class="grid grid-cols-6 gap-2 text-lg text-center">
+                        <button onclick="insertEmoji('👋')" class="hover:bg-slate-100 rounded">👋</button>
+                        <button onclick="insertEmoji('😊')" class="hover:bg-slate-100 rounded">😊</button>
+                        <button onclick="insertEmoji('✅')" class="hover:bg-slate-100 rounded">✅</button>
+                        <button onclick="insertEmoji('🔔')" class="hover:bg-slate-100 rounded">🔔</button>
+                        <button onclick="insertEmoji('📅')" class="hover:bg-slate-100 rounded">📅</button>
+                        <button onclick="insertEmoji('💳')" class="hover:bg-slate-100 rounded">💳</button>
+                        <button onclick="insertEmoji('🚀')" class="hover:bg-slate-100 rounded">🚀</button>
+                        <button onclick="insertEmoji('💬')" class="hover:bg-slate-100 rounded">💬</button>
+                        <button onclick="insertEmoji('🛡️')" class="hover:bg-slate-100 rounded">🛡️</button>
+                        <button onclick="insertEmoji('⚡')" class="hover:bg-slate-100 rounded">⚡</button>
+                        <button onclick="insertEmoji('👍')" class="hover:bg-slate-100 rounded">👍</button>
+                        <button onclick="insertEmoji('❤️')" class="hover:bg-slate-100 rounded">❤️</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <textarea id="messageInput" rows="5" placeholder="Type your message here..."
+                class="w-full bg-[#FAFAFA] border border-[#E5E9F0] rounded-2xl p-4 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#0057FF] focus:border-transparent transition resize-y"></textarea>
+
+              <div class="flex items-center justify-between text-xs text-[#6B7280] pt-1">
+                <div class="flex items-center space-x-2">
+                  <span id="charCountLabel">0 characters</span>
+                  <span>|</span>
+                  <span id="smsPartBadge" class="bg-[#F0FDF4] text-[#16A36A] border border-[#BBF7D0] font-bold text-[10px] px-2 py-0.5 rounded">1 SMS (GSM-7)</span>
+                </div>
+                <div>Standard GSM-7: 160 characters</div>
+              </div>
+            </div>
+
+            <!-- Bottom Actions -->
+            <div class="flex items-center justify-between pt-3 border-t border-[#E5E9F0]">
+              <div class="flex items-center space-x-2">
+                <button onclick="alert('MMS attachments require MMS APN subscription on cellular SIM.')" class="w-9 h-9 rounded-xl border border-[#E5E9F0] bg-white hover:bg-slate-50 text-[#6B7280] hover:text-[#111827] flex items-center justify-center transition" title="Attach file">
+                  <i class="fa-solid fa-paperclip text-sm"></i>
+                </button>
+                <button onclick="alert('Image URLs can be inserted into the text body.')" class="w-9 h-9 rounded-xl border border-[#E5E9F0] bg-white hover:bg-slate-50 text-[#6B7280] hover:text-[#111827] flex items-center justify-center transition" title="Add image">
+                  <i class="fa-regular fa-image text-sm"></i>
+                </button>
+              </div>
+
+              <!-- Send Button -->
+              <div class="flex items-center relative">
+                <button id="sendBtn" onclick="dispatchRealSms()" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs py-2.5 px-5 rounded-l-xl flex items-center space-x-2 shadow-xs transition">
+                  <i class="fa-solid fa-paper-plane text-xs"></i>
+                  <span>Send SMS via Phone SIM</span>
+                </button>
+                <button onclick="toggleSendMenu()" class="bg-[#0057FF] hover:bg-[#0047D4] border-l border-blue-400 text-white text-xs py-2.5 px-3 rounded-r-xl transition">
+                  <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                </button>
+
+                <div id="sendMenuDropdown" class="dropdown-menu absolute right-0 bottom-full mb-2 w-56 bg-white border border-[#E5E9F0] rounded-2xl shadow-float py-2 z-30">
+                  <button onclick="setSendPacing(0); dispatchRealSms();" class="w-full text-left px-4 py-2 text-xs text-[#374151] hover:bg-slate-50 flex items-center justify-between">
+                    <span>⚡ Send Immediately</span><span class="text-[10px] text-gray-400">Default</span>
+                  </button>
+                  <button onclick="setSendPacing(3000); dispatchRealSms();" class="w-full text-left px-4 py-2 text-xs text-[#374151] hover:bg-slate-50 flex items-center justify-between">
+                    <span>⏱️ Send with 3s Pacing</span><span class="text-[10px] text-gray-400">Anti-Spam</span>
+                  </button>
+                  <button onclick="openScheduleModal()" class="w-full text-left px-4 py-2 text-xs text-[#374151] hover:bg-slate-50 flex items-center justify-between">
+                    <span>📅 Schedule for Later</span><span class="text-[10px] text-gray-400">Timer</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT 4 COLS: Real Activity Stats, Live Queue Stream & Quick Actions -->
+          <div class="lg:col-span-4 space-y-6">
+            
+            <!-- Real Today's Activity Stats -->
+            <div class="bg-white border border-[#E5E9F0] rounded-3xl p-5 shadow-xs space-y-4">
+              <div class="flex items-center justify-between">
+                <h4 class="font-extrabold text-sm text-[#111827]">Today's Activity</h4>
+                <a href="javascript:void(0)" onclick="openDeliveryReportsModal()" class="text-xs font-bold text-[#0057FF] hover:underline">View All</a>
+              </div>
+
+              <!-- 2x2 Real Counters Grid -->
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3.5 space-y-1">
+                  <div class="w-7 h-7 rounded-full bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-paper-plane"></i>
+                  </div>
+                  <div class="text-2xl font-black text-[#111827]" id="statSent">0</div>
+                  <p class="text-[11px] font-bold text-[#4B5563]">SMS Sent</p>
+                </div>
+
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3.5 space-y-1">
+                  <div class="w-7 h-7 rounded-full bg-[#F0FDF4] text-[#16A36A] flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-check"></i>
+                  </div>
+                  <div class="text-2xl font-black text-[#111827]" id="statDelivered">0</div>
+                  <p class="text-[11px] font-bold text-[#4B5563]">Delivered</p>
+                </div>
+
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3.5 space-y-1">
+                  <div class="w-7 h-7 rounded-full bg-[#FFFBEB] text-[#D97706] flex items-center justify-center text-xs">
+                    <i class="fa-regular fa-clock"></i>
+                  </div>
+                  <div class="text-2xl font-black text-[#111827]" id="statPending">0</div>
+                  <p class="text-[11px] font-bold text-[#4B5563]">Pending</p>
+                </div>
+
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3.5 space-y-1">
+                  <div class="w-7 h-7 rounded-full bg-[#FFF0F0] text-[#E5484D] flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                  </div>
+                  <div class="text-2xl font-black text-[#111827]" id="statFailed">0</div>
+                  <p class="text-[11px] font-bold text-[#4B5563]">Failed</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Realtime Transmission Stream (Connected to Phone Firestore queue) -->
+            <div class="bg-white border border-[#E5E9F0] rounded-3xl p-5 shadow-xs space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <i class="fa-solid fa-tower-broadcast text-[#0057FF] text-xs"></i>
+                  <h4 class="font-extrabold text-sm text-[#111827]">Transmission Stream</h4>
+                </div>
+                <span class="bg-[#F0FDF4] text-[#16A36A] border border-[#BBF7D0] text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#16A36A] animate-pulse"></span> Live
+                </span>
+              </div>
+
+              <!-- Stream Messages List -->
+              <div id="streamList" class="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
+                <div id="emptyStreamPlaceholder" class="text-center py-6 px-4 space-y-1.5">
+                  <div class="w-10 h-10 rounded-full bg-[#F1F5F9] text-[#94A3B8] flex items-center justify-center mx-auto text-base">
+                    <i class="fa-solid fa-tower-broadcast"></i>
+                  </div>
+                  <h5 class="text-xs font-bold text-[#111827]">No active transmissions yet.</h5>
+                  <p class="text-[11px] text-[#6B7280]">When you send an SMS, real-time delivery status will appear here.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white border border-[#E5E9F0] rounded-3xl p-5 shadow-xs space-y-3">
+              <h4 class="font-extrabold text-sm text-[#111827]">Quick Actions</h4>
+              <div class="grid grid-cols-3 gap-2.5">
+                <button onclick="openContactsModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
+                  <div class="w-8 h-8 rounded-xl bg-[#F0FDF4] text-[#16A36A] flex items-center justify-center text-sm group-hover:scale-110 transition"><i class="fa-solid fa-user-group"></i></div>
+                  <span class="text-xs font-bold text-[#111827]">Contacts</span>
+                  <span class="text-[9px] text-[#6B7280]">Manage contacts</span>
+                </button>
+                <button onclick="openTemplatesModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
+                  <div class="w-8 h-8 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm group-hover:scale-110 transition"><i class="fa-solid fa-file-lines"></i></div>
+                  <span class="text-xs font-bold text-[#111827]">Templates</span>
+                  <span class="text-[9px] text-[#6B7280]">Create templates</span>
+                </button>
+                <button onclick="openScheduleModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
+                  <div class="w-8 h-8 rounded-xl bg-[#FAF5FF] text-[#9333EA] flex items-center justify-center text-sm group-hover:scale-110 transition"><i class="fa-solid fa-calendar-days"></i></div>
+                  <span class="text-xs font-bold text-[#111827]">Schedule SMS</span>
+                  <span class="text-[9px] text-[#6B7280]">Set date & time</span>
+                </button>
+                <button onclick="openDeliveryReportsModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
+                  <div class="w-8 h-8 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm group-hover:scale-110 transition"><i class="fa-solid fa-chart-simple"></i></div>
+                  <span class="text-xs font-bold text-[#111827]">Reports</span>
+                  <span class="text-[9px] text-[#6B7280]">View logs</span>
+                </button>
+                <button onclick="openDeviceStatusModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
+                  <div class="w-8 h-8 rounded-xl bg-[#F1F5F9] text-[#475569] flex items-center justify-center text-sm group-hover:scale-110 transition"><i class="fa-solid fa-gear"></i></div>
+                  <span class="text-xs font-bold text-[#111827]">Settings</span>
+                  <span class="text-[9px] text-[#6B7280]">SIM & battery</span>
+                </button>
+                <button onclick="exportDispatchHistoryCsv()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
+                  <div class="w-8 h-8 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm group-hover:scale-110 transition"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+                  <span class="text-xs font-bold text-[#111827]">Export Data</span>
+                  <span class="text-[9px] text-[#6B7280]">Download CSV</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 4. MODALS & POPUP DIALOGS                                             -->
+  <!-- ===================================================================== -->
+
+  <!-- Modal: Real Device Telemetry & SIM Status -->
+  <div id="modalDeviceStatus" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl border border-[#E5E9F0]">
+      <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+          </div>
+          <h3 class="font-extrabold text-base text-[#111827]">Live Device Hardware & SIM</h3>
+        </div>
+        <button onclick="closeModal('modalDeviceStatus')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#6B7280] flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-4 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[#6B7280]">Phone Model</span>
+            <span class="font-bold text-[#111827]" id="modalDetailModel">Connecting...</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-[#6B7280]">Operating System</span>
+            <span class="font-bold text-[#111827]" id="modalDetailOs">Android</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-[#6B7280]">Active SIM Carrier</span>
+            <span class="font-bold text-[#111827]" id="modalDetailCarrier">Cellular SIM</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-[#6B7280]">SIM Telephone Number</span>
+            <span class="font-bold text-[#111827] font-mono" id="modalDetailPhone">Not registered</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-[#6B7280]">Battery Level</span>
+            <span class="font-bold text-[#16A36A] flex items-center gap-1.5" id="modalDetailBattery">
+              <i class="fa-solid fa-battery-three-quarters"></i> --%
+            </span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-[#6B7280]">Cellular Baseband Radio</span>
+            <span class="font-bold text-[#16A36A] flex items-center gap-1">
+              <i class="fa-solid fa-circle-check"></i> Connected & Ready
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 flex items-center justify-between">
+        <button onclick="unlinkDeviceSession()" class="text-xs font-bold text-[#E5484D] hover:underline">
+          <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Disconnect Phone
+        </button>
+        <button onclick="closeModal('modalDeviceStatus')" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs px-5 py-2 rounded-xl">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Contacts Manager -->
+  <div id="modalContacts" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0]">
+      <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#F0FDF4] text-[#16A36A] flex items-center justify-center text-sm">
+            <i class="fa-solid fa-user-group"></i>
+          </div>
+          <h3 class="font-extrabold text-base text-[#111827]">Contacts</h3>
+        </div>
+        <button onclick="closeModal('modalContacts')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#6B7280] flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <input type="text" id="contactSearchInput" oninput="filterContacts(this.value)" placeholder="Search contacts..."
+          class="flex-1 bg-[#FAFAFA] border border-[#E5E9F0] rounded-xl px-3.5 py-2 text-xs text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#0057FF]">
+        <button onclick="promptAddNewContact()" class="bg-[#EFF6FF] hover:bg-[#DBEAFE] text-[#0057FF] font-bold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1">
+          <i class="fa-solid fa-plus text-xs"></i> New
+        </button>
+      </div>
+
+      <div id="contactsListContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="pt-2 flex items-center justify-between border-t border-[#E5E9F0]">
+        <span class="text-[11px] text-[#6B7280]" id="selectedContactsCount">0 selected</span>
+        <button onclick="insertSelectedContacts()" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs px-5 py-2 rounded-xl">
+          Add to Recipients
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Templates Manager -->
+  <div id="modalTemplates" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0]">
+      <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm">
+            <i class="fa-solid fa-file-lines"></i>
+          </div>
+          <h3 class="font-extrabold text-base text-[#111827]">Message Templates</h3>
+        </div>
+        <button onclick="closeModal('modalTemplates')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#6B7280] flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div id="templatesListContainer" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
+
+      <div class="pt-2 flex items-center justify-between border-t border-[#E5E9F0]">
+        <button onclick="saveCurrentAsTemplate()" class="text-xs font-bold text-[#0057FF] hover:underline">
+          <i class="fa-solid fa-plus mr-1"></i> Save Current as Template
+        </button>
+        <button onclick="closeModal('modalTemplates')" class="bg-slate-100 hover:bg-slate-200 text-[#111827] font-bold text-xs px-5 py-2 rounded-xl">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Schedule SMS -->
+  <div id="modalSchedule" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0]">
+      <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#FAF5FF] text-[#9333EA] flex items-center justify-center text-sm">
+            <i class="fa-solid fa-calendar-days"></i>
+          </div>
+          <h3 class="font-extrabold text-base text-[#111827]">Schedule SMS</h3>
+        </div>
+        <button onclick="closeModal('modalSchedule')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#6B7280] flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-[#111827] mb-1">Send Date</label>
+          <input type="date" id="scheduleDate" class="w-full bg-[#FAFAFA] border border-[#E5E9F0] rounded-xl px-3 py-2 text-xs">
+        </div>
+        <div>
+          <label class="block font-bold text-[#111827] mb-1">Send Time</label>
+          <input type="time" id="scheduleTime" class="w-full bg-[#FAFAFA] border border-[#E5E9F0] rounded-xl px-3 py-2 text-xs">
+        </div>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end space-x-2">
+        <button onclick="closeModal('modalSchedule')" class="text-xs font-bold px-4 py-2 rounded-xl text-[#6B7280] hover:bg-slate-100">Cancel</button>
+        <button onclick="confirmScheduleSms()" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs px-5 py-2 rounded-xl">Confirm Schedule</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Broadcast / Group Dispatch -->
+  <div id="modalBroadcast" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0]">
+      <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm">
+            <i class="fa-solid fa-bullhorn"></i>
+          </div>
+          <h3 class="font-extrabold text-base text-[#111827]">Broadcast Message</h3>
+        </div>
+        <button onclick="closeModal('modalBroadcast')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#6B7280] flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <label class="font-bold text-[#111827]">Select Group</label>
+        <div id="broadcastGroupList" class="space-y-2"></div>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end space-x-2">
+        <button onclick="closeModal('modalBroadcast')" class="text-xs font-bold px-4 py-2 rounded-xl text-[#6B7280] hover:bg-slate-100">Cancel</button>
+        <button onclick="confirmBroadcastSelection()" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs px-5 py-2 rounded-xl">Load Recipients</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Delivery Reports & Full History -->
+  <div id="modalDeliveryReports" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0]">
+      <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm">
+            <i class="fa-solid fa-chart-simple"></i>
+          </div>
+          <h3 class="font-extrabold text-base text-[#111827]">Delivery Reports & Message History</h3>
+        </div>
+        <button onclick="closeModal('modalDeliveryReports')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#6B7280] flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-4 gap-2 text-center">
+          <div class="bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 rounded-xl">
+            <span class="text-[#6B7280] text-[10px] uppercase font-bold">Sent</span>
+            <p class="text-lg font-black text-[#111827]" id="modalStatSent">0</p>
+          </div>
+          <div class="bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 rounded-xl">
+            <span class="text-[#6B7280] text-[10px] uppercase font-bold">Delivered</span>
+            <p class="text-lg font-black text-[#16A36A]" id="modalStatDelivered">0</p>
+          </div>
+          <div class="bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 rounded-xl">
+            <span class="text-[#6B7280] text-[10px] uppercase font-bold">Pending</span>
+            <p class="text-lg font-black text-[#D97706]" id="modalStatPending">0</p>
+          </div>
+          <div class="bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 rounded-xl">
+            <span class="text-[#6B7280] text-[10px] uppercase font-bold">Failed</span>
+            <p class="text-lg font-black text-[#E5484D]" id="modalStatFailed">0</p>
+          </div>
+        </div>
+
+        <div id="fullHistoryContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+      </div>
+
+      <div class="pt-2 flex justify-between items-center">
+        <button onclick="clearAllHistory()" class="text-xs font-bold text-[#E5484D] hover:underline flex items-center gap-1.5">
+          <i class="fa-solid fa-trash-can text-xs"></i> Clear History
+        </button>
+        <button onclick="closeModal('modalDeliveryReports')" class="bg-[#0057FF] text-white font-bold text-xs px-5 py-2 rounded-xl">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: How It Works Walkthrough -->
+  <div id="modalHowItWorks" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-7 space-y-6 shadow-2xl border border-[#E5E9F0]">
+      <div class="flex items-center justify-between border-b border-[#E5E9F0] pb-4">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-base">
+            <i class="fa-regular fa-circle-play"></i>
+          </div>
+          <h3 class="font-extrabold text-base text-[#111827]">How Simple SMS Works</h3>
+        </div>
+        <button onclick="closeModal('modalHowItWorks')" class="w-8 h-8 rounded-full bg-[#F1F5F9] text-[#6B7280] hover:text-[#111827] flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs text-[#6B7280]">
+        <div class="flex items-start space-x-3.5">
+          <span class="w-7 h-7 rounded-lg bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center font-bold text-xs flex-shrink-0">1</span>
+          <div>
+            <h4 class="font-bold text-sm text-[#111827]">No Third-Party SMS Gateways</h4>
+            <p class="mt-0.5">Simple SMS utilizes the real SIM cards inserted in your Android phone. No API fees or expensive monthly SMS gateway contracts.</p>
+          </div>
+        </div>
+        <div class="flex items-start space-x-3.5">
+          <span class="w-7 h-7 rounded-lg bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center font-bold text-xs flex-shrink-0">2</span>
+          <div>
+            <h4 class="font-bold text-sm text-[#111827]">Real-time Google Cloud Sync</h4>
+            <p class="mt-0.5">When you send a message from this computer, it dispatches to your device's cellular radio via secure Firestore baseband queues.</p>
+          </div>
+        </div>
+        <div class="flex items-start space-x-3.5">
+          <span class="w-7 h-7 rounded-lg bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center font-bold text-xs flex-shrink-0">3</span>
+          <div>
+            <h4 class="font-bold text-sm text-[#111827]">Hardware Delivery Receipts</h4>
+            <p class="mt-0.5">Cellular towers communicate directly with your phone's modem, reporting real delivery receipts back to this dashboard.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <a href="#connect" onclick="closeModal('modalHowItWorks'); navigateTo('connect'); return false;" class="w-full bg-[#0057FF] hover:bg-[#0047D4] text-white py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition">
+          <span>Connect Your Phone Now</span>
+          <i class="fa-solid fa-arrow-right text-xs"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Simple SMS Pro -->
+  <div id="modalPro" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0] text-center">
+      <div class="w-12 h-12 rounded-2xl bg-[#FEF3C7] text-[#D97706] flex items-center justify-center text-xl mx-auto shadow-xs">
+        <i class="fa-solid fa-crown"></i>
+      </div>
+      <h3 class="font-extrabold text-lg text-[#111827]">Simple SMS Pro</h3>
+      <p class="text-xs text-[#6B7280]">
+        All pro features including bulk campaigns, multi-SIM pacing, and scheduled dispatches are active in this build.
+      </p>
+      <button onclick="closeModal('modalPro')" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-xs">
+        Continue
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Firestore Rules Assistant -->
+  <div id="modalRules" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0]">
+      <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#FFF5DF] text-[#D98A12] flex items-center justify-center text-sm">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h3 class="font-extrabold text-base text-[#111827]">Firestore Security Rules</h3>
+        </div>
+        <button onclick="closeModal('modalRules')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#6B7280] flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+      <p class="text-xs text-[#6B7280]">Make sure your Firebase project (<code class="text-blue-600 font-mono">simple-sms-c22dc</code>) has rules set to allow read/write:</p>
+      <pre class="bg-[#0F172A] text-[#E2E8F0] p-4 rounded-xl text-[11px] font-mono overflow-x-auto select-all">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}</pre>
+      <div class="flex justify-end pt-2">
+        <button onclick="closeModal('modalRules')" class="bg-[#0057FF] text-white font-bold text-xs px-5 py-2 rounded-xl">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toastNotification" class="hidden fixed bottom-6 right-6 z-50 bg-[#111827] text-white px-4 py-3 rounded-2xl shadow-float text-xs flex items-center space-x-3 transition transform">
+    <div id="toastIcon" class="text-[#16A36A] text-sm"><i class="fa-solid fa-circle-check"></i></div>
+    <span id="toastMessage">Notification</span>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 5. APPLICATION LOGIC, ROUTER & REAL DATA ENGINE                       -->
+  <!-- ===================================================================== -->
+  <script>
+    // -------------------------------------------------------------------------
+    // FIREBASE INITIALIZATION
+    // -------------------------------------------------------------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyDz-5D75VWnhjW200g-XLhPNfc5L6MA4jc",
+      authDomain: "simple-sms-c22dc.firebaseapp.com",
+      projectId: "simple-sms-c22dc",
+      storageBucket: "simple-sms-c22dc.firebasestorage.app",
+      messagingSenderId: "745784510495",
+      appId: "1:745784510495:android:43c00d66a3837da689ed2a"
+    };
+
+    let db;
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      db = firebase.firestore();
+      console.log("Firestore initialized successfully:", firebaseConfig.projectId);
+    } catch (err) {
+      console.error("Firebase init error:", err);
+    }
+
+    // -------------------------------------------------------------------------
+    // APPLICATION STATE
+    // -------------------------------------------------------------------------
+    let currentSessionId = localStorage.getItem('simplesms_web_session') || "";
+    let boundDeviceId = localStorage.getItem('simplesms_bound_device') || "";
+    let sessionListener = null;
+    let queueListener = null;
+    let historyListener = null;
+    let contactsListener = null;
+    let templatesListener = null;
+    let deviceDocListener = null;
+    let sendPacingMs = 0;
+
+    // Contact store in localStorage (synced from Android via Firestore)
+    let userContacts = JSON.parse(localStorage.getItem('simplesms_user_contacts') || "[]");
+    let selectedContactNumbers = [];
+
+    // Template store in localStorage
+    let userTemplates = JSON.parse(localStorage.getItem('simplesms_user_templates') || "[]");
+    if (userTemplates.length === 0) {
+      userTemplates = [
+        { id: 't1', title: 'Notification', text: 'Important notification: Please note our updated operating hours and service guidelines.' },
+        { id: 't2', title: 'Appointment Reminder', text: 'Hi {name}, this is a reminder for your upcoming appointment scheduled for tomorrow. Please reply to confirm.' },
+        { id: 't3', title: 'OTP Code', text: 'Your verification code is: 489201. Valid for 10 minutes. Do not share this code.' },
+        { id: 't4', title: 'Payment Reminder', text: 'Dear {name}, your pending invoice is due today. Please complete your payment at your earliest convenience.' },
+        { id: 't5', title: 'Custom Message', text: 'Hello {name}, thank you for contacting Simple SMS. How can we assist you today?' }
+      ];
+      localStorage.setItem('simplesms_user_templates', JSON.stringify(userTemplates));
+    }
+
+    // Real stats computed from Firestore history & queue
+    let realStats = {
+      sent: 0,
+      delivered: 0,
+      pending: 0,
+      failed: 0
+    };
+    let realHistoryMessages = [];
+    let realPendingMessages = [];
+    let realQueueMessages = [];
+
+    // -------------------------------------------------------------------------
+    // ROUTER: HOME -> CONNECT -> DASHBOARD
+    // -------------------------------------------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      initCharacterCounter();
+      renderContactsList();
+      renderTemplatesList();
+      renderQuickTemplateChips();
+      
+      // Handle initial route based on hash or connection status
+      handleRouting();
+      window.addEventListener('hashchange', handleRouting);
+    });
+
+    function navigateTo(route) {
+      window.location.hash = route;
+      handleRouting();
+    }
+
+    function handleRouting() {
+      const hash = window.location.hash.replace('#', '') || 'home';
+
+      if (hash === 'dashboard') {
+        // Only allow dashboard if device is bound
+        if (!boundDeviceId) {
+          showConnectView();
+          return;
+        }
+        showDashboardView();
+      } else if (hash === 'connect') {
+        showConnectView();
+      } else {
+        showHomeView();
+      }
+    }
+
+    function showHomeView() {
+      document.getElementById('publicHeader').classList.remove('hidden');
+      document.getElementById('dashboardHeader').classList.add('hidden');
+      document.getElementById('viewHome').classList.remove('hidden');
+      document.getElementById('viewPairing').classList.add('hidden');
+      document.getElementById('viewDashboardWrapper').classList.add('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    function showConnectView() {
+      document.getElementById('publicHeader').classList.remove('hidden');
+      document.getElementById('dashboardHeader').classList.add('hidden');
+      document.getElementById('viewHome').classList.add('hidden');
+      document.getElementById('viewPairing').classList.remove('hidden');
+      document.getElementById('viewDashboardWrapper').classList.add('hidden');
+
+      // Generate a fresh QR pairing session whenever user visits connect page
+      generateNewPairingSession();
+      window.scrollTo(0, 0);
+    }
+
+    function showDashboardView() {
+      document.getElementById('publicHeader').classList.add('hidden');
+      document.getElementById('dashboardHeader').classList.remove('hidden');
+      document.getElementById('viewHome').classList.add('hidden');
+      document.getElementById('viewPairing').classList.add('hidden');
+      document.getElementById('viewDashboardWrapper').classList.remove('hidden');
+
+      loadRealDeviceData(boundDeviceId);
+      listenToDeviceSync(boundDeviceId);
+      window.scrollTo(0, 0);
+    }
+
+    // -------------------------------------------------------------------------
+    // QR PAIRING ENGINE (Real Firestore pairing)
+    // -------------------------------------------------------------------------
+    function generateNewPairingSession() {
+      currentSessionId = "sess_" + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+      localStorage.setItem('simplesms_web_session', currentSessionId);
+
+      const label = document.getElementById('displaySessionId');
+      if (label) label.innerText = currentSessionId;
+
+      renderQrCode("simplesms://pair?session=" + currentSessionId);
+      listenToPairingSession(currentSessionId);
+    }
+
+    function renderQrCode(dataString) {
+      const container = document.getElementById('qrcode');
+      if (!container) return;
+      container.innerHTML = "";
+
+      new QRCode(container, {
+        text: dataString,
+        width: 180,
+        height: 180,
+        colorDark: "#0057FF",
+        colorLight: "#FFFFFF",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    function listenToPairingSession(sessionId) {
+      if (!db) return;
+      if (sessionListener) sessionListener();
+
+      const sessionRef = db.collection('sessions').doc(sessionId);
+
+      sessionRef.set({
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        status: "WAITING_FOR_SCAN",
+        browser: navigator.userAgent.includes("Chrome") ? "Google Chrome" : "Web Browser",
+        platform: navigator.platform || "Desktop"
+      }, { merge: true });
+
+      const statusText = document.getElementById('qrStatusText');
+      if (statusText) {
+        statusText.innerText = "Waiting for phone scan...";
+        statusText.className = "";
+      }
+
+      sessionListener = sessionRef.onSnapshot(doc => {
+        if (!doc.exists) return;
+        const data = doc.data();
+
+        if (data.status === "PAIRED" && data.deviceId) {
+          boundDeviceId = data.deviceId;
+          localStorage.setItem('simplesms_bound_device', boundDeviceId);
+
+          if (statusText) {
+            statusText.innerText = "Phone connected! Opening dashboard...";
+            statusText.className = "text-[#16A36A] font-bold";
+          }
+          showToast("Phone successfully connected!", "success");
+
+          // Transition to user's real dashboard immediately
+          setTimeout(() => {
+            window.location.hash = 'dashboard';
+            showDashboardView();
+          }, 400);
+        }
+      }, err => {
+        console.warn("Session snapshot note:", err.message);
+      });
+    }
+
+    // -------------------------------------------------------------------------
+    // REAL DEVICE TELEMETRY FROM ANDROID PHONE
+    // -------------------------------------------------------------------------
+    function loadRealDeviceData(deviceId) {
+      if (!db) return;
+
+      // 1. Immediately read from session doc for instantaneous zero-latency display
+      if (currentSessionId) {
+        db.collection('sessions').doc(currentSessionId).get().then(doc => {
+          if (doc.exists && doc.data().status === 'PAIRED') {
+            applyDeviceDataToUi(doc.data(), deviceId);
+          }
+        }).catch(console.warn);
+      }
+
+      // 2. Realtime listener on device document
+      if (deviceId) {
+        if (deviceDocListener) deviceDocListener();
+        const deviceRef = db.collection('devices').doc(deviceId);
+
+        deviceDocListener = deviceRef.onSnapshot(doc => {
+          if (doc.exists) {
+            applyDeviceDataToUi(doc.data(), deviceId);
+          }
+        }, err => {
+          console.warn("Device document listener error:", err.message);
+        });
+      }
+    }
+
+    function applyDeviceDataToUi(data, deviceId) {
+      if (!data) return;
+
+      // Real Hardware Values from Android
+      const model = data.model || data.deviceModel || "Android Device";
+      const osVersion = data.osVersion || data.androidVersion || "Android";
+      const carrier = data.carrier || data.simCarrier || "Cellular SIM";
+      const phoneNumber = data.phoneNumber || "SIM Phone Number";
+      const battery = (data.battery !== undefined && data.battery !== null) ? data.battery : (data.batteryLevel || "--");
+      const isOnline = data.status === 'online' || data.status === 'PAIRED';
+
+      // Update Header
+      const hSub = document.getElementById('headerDeviceSub');
+      if (hSub) hSub.innerText = `${model} • ${carrier}`;
+
+      const menuName = document.getElementById('menuDeviceName');
+      if (menuName) menuName.innerText = `${model} (${deviceId || boundDeviceId})`;
+
+      // Update Middle Status Card
+      const dModel = document.getElementById('dashDeviceModel');
+      if (dModel) dModel.innerText = model;
+
+      const dOs = document.getElementById('dashDeviceOs');
+      if (dOs) dOs.innerText = osVersion;
+
+      const dSim = document.getElementById('dashSimTag');
+      if (dSim) dSim.innerText = carrier;
+
+      const dPhone = document.getElementById('dashPhoneNum');
+      if (dPhone) dPhone.innerText = phoneNumber;
+
+      const dBat = document.getElementById('dashBatteryPct');
+      if (dBat) dBat.innerText = battery + "%";
+
+      // Battery Icon
+      const bIcon = document.getElementById('dashBatteryIcon');
+      if (bIcon && typeof battery === 'number') {
+        if (battery > 80) bIcon.className = "fa-solid fa-battery-full text-[#16A36A]";
+        else if (battery > 50) bIcon.className = "fa-solid fa-battery-three-quarters text-[#16A36A]";
+        else if (battery > 20) bIcon.className = "fa-solid fa-battery-half text-[#D98A12]";
+        else bIcon.className = "fa-solid fa-battery-quarter text-[#E5484D]";
+      }
+
+      const dBadge = document.getElementById('dashDeviceStatusBadge');
+      if (dBadge) {
+        dBadge.innerText = isOnline ? "Online" : "Offline";
+        dBadge.className = isOnline ?
+          "bg-[#F0FDF4] text-[#16A36A] border border-[#BBF7D0] text-[10px] font-bold px-2 py-0.5 rounded-full" :
+          "bg-[#FFF0F0] text-[#E5484D] border border-[#FCA5A5]/30 text-[10px] font-bold px-2 py-0.5 rounded-full";
+      }
+
+      // Modal Details
+      const mModel = document.getElementById('modalDetailModel');
+      if (mModel) mModel.innerText = `${model} (${data.manufacturer || 'Android'})`;
+
+      const mOs = document.getElementById('modalDetailOs');
+      if (mOs) mOs.innerText = `${osVersion} (SDK ${data.sdkInt || 'Native'})`;
+
+      const mCarrier = document.getElementById('modalDetailCarrier');
+      if (mCarrier) mCarrier.innerText = carrier;
+
+      const mPhone = document.getElementById('modalDetailPhone');
+      if (mPhone) mPhone.innerText = phoneNumber;
+
+      const mBat = document.getElementById('modalDetailBattery');
+      if (mBat) mBat.innerHTML = `<i class="fa-solid fa-battery-three-quarters text-[#16A36A]"></i> ${battery}% ${data.isCharging ? '(Charging)' : ''}`;
+
+      // Sync Time
+      const dSync = document.getElementById('dashLastSync');
+      if (dSync) {
+        const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        dSync.innerText = `Last synced: Today, ${nowStr}`;
+      }
+    }
+
+    function refreshPhoneData() {
+      const icon = document.getElementById('refreshIcon');
+      if (icon) icon.classList.add('fa-spin');
+
+      setTimeout(() => {
+        if (icon) icon.classList.remove('fa-spin');
+        showToast("Phone telemetry updated", "info");
+      }, 700);
+
+      if (boundDeviceId) {
+        loadRealDeviceData(boundDeviceId);
+      }
+    }
+
+    function unlinkDeviceSession() {
+      if (!confirm("Are you sure you want to disconnect your Android phone from this desktop session?")) return;
+
+      if (sessionListener) { sessionListener(); sessionListener = null; }
+      if (queueListener) { queueListener(); queueListener = null; }
+      if (historyListener) { historyListener(); historyListener = null; }
+      if (contactsListener) { contactsListener(); contactsListener = null; }
+      if (templatesListener) { templatesListener(); templatesListener = null; }
+      if (deviceDocListener) { deviceDocListener(); deviceDocListener = null; }
+
+      if (db && currentSessionId) {
+        db.collection('sessions').doc(currentSessionId).update({
+          status: "DISCONNECTED"
+        }).catch(() => {});
+      }
+
+      if (db && boundDeviceId) {
+        db.collection('devices').doc(boundDeviceId).update({
+          status: "offline",
+          linkedSession: null
+        }).catch(() => {});
+      }
+
+      localStorage.removeItem('simplesms_bound_device');
+      localStorage.removeItem('simplesms_web_session');
+      boundDeviceId = "";
+      currentSessionId = "";
+
+      closeModal('modalDeviceStatus');
+      showToast("Phone disconnected", "info");
+      navigateTo('home');
+    }
+
+    // -------------------------------------------------------------------------
+    // REAL-TIME TWO-WAY SYNCHRONIZATION VIA FIRESTORE (onSnapshot)
+    // -------------------------------------------------------------------------
+    function listenToDeviceSync(deviceId) {
+      if (!db || !deviceId) return;
+
+      if (queueListener) { queueListener(); queueListener = null; }
+      if (historyListener) { historyListener(); historyListener = null; }
+      if (contactsListener) { contactsListener(); contactsListener = null; }
+      if (templatesListener) { templatesListener(); templatesListener = null; }
+
+      // 1. REAL-TIME CONTACTS SYNC (via onSnapshot)
+      const contactsRef = db.collection('devices').doc(deviceId).collection('sync').doc('contacts');
+      contactsListener = contactsRef.onSnapshot(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          if (data && Array.isArray(data.contacts)) {
+            userContacts = data.contacts;
+            localStorage.setItem('simplesms_user_contacts', JSON.stringify(userContacts));
+            renderContactsList();
+            renderBroadcastGroups();
+          }
+        }
+      }, err => {
+        console.warn("Contacts onSnapshot error:", err.message);
+      });
+
+      // 2. REAL-TIME OUTGOING TRANSMISSION QUEUE (PENDING / TRANSMITTING)
+      const queueRef = db.collection('devices').doc(deviceId).collection('outgoing_queue');
+      queueListener = queueRef.orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+        realPendingMessages = [];
+        snapshot.forEach(doc => {
+          const item = doc.data();
+          item.id = doc.id;
+          item.isPending = true;
+          realPendingMessages.push(item);
+        });
+        recomputeStatsAndRender();
+      }, err => {
+        console.warn("Outgoing queue onSnapshot error:", err.message);
+      });
+
+      // 3. REAL-TIME DISPATCH HISTORY (Completed dispatches from Web & Android Phone)
+      const historyRef = db.collection('devices').doc(deviceId).collection('history');
+      historyListener = historyRef.orderBy('timestamp', 'desc').limit(100).onSnapshot(snapshot => {
+        realHistoryMessages = [];
+        snapshot.forEach(doc => {
+          const item = doc.data();
+          item.id = doc.id;
+          realHistoryMessages.push(item);
+        });
+        recomputeStatsAndRender();
+      }, err => {
+        console.warn("History onSnapshot error:", err.message);
+      });
+
+      // 4. REAL-TIME TEMPLATES SYNC (via onSnapshot)
+      const templatesRef = db.collection('devices').doc(deviceId).collection('sync').doc('templates');
+      templatesListener = templatesRef.onSnapshot(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          if (data && Array.isArray(data.templates) && data.templates.length > 0) {
+            userTemplates = data.templates;
+            localStorage.setItem('simplesms_user_templates', JSON.stringify(userTemplates));
+            renderTemplatesList();
+            renderQuickTemplateChips();
+          }
+        }
+      }, err => {
+        console.warn("Templates onSnapshot error:", err.message);
+      });
+    }
+
+    // Backwards compatibility alias
+    function listenToDeviceQueue(deviceId) {
+      listenToDeviceSync(deviceId);
+    }
+
+    function recomputeStatsAndRender() {
+      realStats = { sent: 0, delivered: 0, pending: 0, failed: 0 };
+      const todayDateStr = new Date().toDateString();
+
+      // Pending count from live queue
+      realStats.pending = realPendingMessages.length;
+
+      // Completed dispatches count from Firestore history
+      realHistoryMessages.forEach(item => {
+        let msgDate = new Date();
+        if (item.timestamp && item.timestamp.toDate) {
+          msgDate = item.timestamp.toDate();
+        } else if (typeof item.timestamp === 'number') {
+          msgDate = new Date(item.timestamp);
+        }
+
+        if (msgDate.toDateString() === todayDateStr) {
+          realStats.sent++;
+          if (item.status === 'SENT') {
+            realStats.delivered++;
+          } else if (item.status === 'FAILED') {
+            realStats.failed++;
+          }
+        }
+      });
+
+      // Combine active queue + completed history for live UI stream
+      realQueueMessages = [...realPendingMessages, ...realHistoryMessages];
+      realQueueMessages.sort((a, b) => {
+        const tA = (a.timestamp && a.timestamp.toDate) ? a.timestamp.toDate().getTime() : (typeof a.timestamp === 'number' ? a.timestamp : Date.now());
+        const tB = (b.timestamp && b.timestamp.toDate) ? b.timestamp.toDate().getTime() : (typeof b.timestamp === 'number' ? b.timestamp : Date.now());
+        return tB - tA;
+      });
+
+      updateStatsUi();
+      renderTransmissionStream();
+      renderFullHistoryList();
+    }
+
+    function updateStatsUi() {
+      document.getElementById('statSent').innerText = realStats.sent;
+      document.getElementById('statDelivered').innerText = realStats.delivered;
+      document.getElementById('statPending').innerText = realStats.pending;
+      document.getElementById('statFailed').innerText = realStats.failed;
+
+      document.getElementById('modalStatSent').innerText = realStats.sent;
+      document.getElementById('modalStatDelivered').innerText = realStats.delivered;
+      document.getElementById('modalStatPending').innerText = realStats.pending;
+      document.getElementById('modalStatFailed').innerText = realStats.failed;
+    }
+
+    function renderTransmissionStream() {
+      const container = document.getElementById('streamList');
+      const placeholder = document.getElementById('emptyStreamPlaceholder');
+
+      if (!container) return;
+
+      if (realQueueMessages.length === 0) {
+        if (placeholder) placeholder.style.display = 'block';
+        container.innerHTML = "";
+        return;
+      }
+
+      if (placeholder) placeholder.style.display = 'none';
+
+      // Show top 10 items in live stream
+      const recent = realQueueMessages.slice(0, 10);
+      container.innerHTML = "";
+
+      recent.forEach(item => {
+        const isSent = item.status === 'SENT';
+        const isFailed = item.status === 'FAILED';
+
+        let statusBadge = '';
+        if (isSent) {
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[10px] font-bold bg-[#F0FDF4] text-[#16A36A] border border-[#BBF7D0] px-2 py-0.5 rounded-full"><i class="fa-solid fa-check text-[8px]"></i> SENT</span>`;
+        } else if (isFailed) {
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[10px] font-bold bg-[#FFF0F0] text-[#E5484D] border border-[#FCA5A5]/30 px-2 py-0.5 rounded-full"><i class="fa-solid fa-xmark text-[8px]"></i> FAILED</span>`;
+        } else {
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[10px] font-bold bg-[#EFF6FF] text-[#0057FF] border border-[#BFDBFE] px-2 py-0.5 rounded-full"><i class="fa-solid fa-spinner fa-spin text-[8px]"></i> TRANSMITTING</span>`;
+        }
+
+        let timeStr = "Just now";
+        if (item.timestamp && item.timestamp.toDate) {
+          timeStr = item.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        const sourceLabel = item.source === 'ANDROID_APP' ? 
+          `<span class="text-[9px] font-bold text-[#6B7280] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200"><i class="fa-solid fa-mobile-screen mr-1 text-[#0057FF]"></i>Phone App</span>` :
+          `<span class="text-[9px] font-bold text-[#6B7280] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200"><i class="fa-solid fa-laptop mr-1 text-[#0057FF]"></i>Web Portal</span>`;
+
+        const el = document.createElement('div');
+        el.className = "bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3 flex flex-col space-y-1.5 transition hover:border-[#BFDBFE]";
+        el.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-1.5">
+              <span class="font-bold text-xs text-[#111827] font-mono">${item.recipientName ? `${item.recipientName} (${item.recipient})` : item.recipient}</span>
+              <span class="text-[10px] text-[#9CA3AF]">• ${timeStr}</span>
+              ${sourceLabel}
+            </div>
+            ${statusBadge}
+          </div>
+          <p class="text-xs text-[#4B5563] line-clamp-1">${item.message}</p>
+          <div class="flex items-center justify-between text-[10px] text-[#6B7280] pt-1 border-t border-[#E2E8F0]">
+            <span class="font-medium text-[#111827]">${item.sim || 'Cellular SIM'}</span>
+            <span class="text-[#16A36A] font-semibold"><i class="fa-solid fa-tower-cell mr-1"></i>Hardware Radio Confirmed</span>
+          </div>
+        `;
+        container.appendChild(el);
+      });
+    }
+
+    function renderFullHistoryList() {
+      const container = document.getElementById('fullHistoryContainer');
+      if (!container) return;
+
+      if (realQueueMessages.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-xs text-[#9CA3AF]"><i class="fa-solid fa-clock-rotate-left text-2xl mb-2 text-slate-300 block"></i>No messages dispatched yet. Send an SMS via Web or Phone to see live activity.</div>`;
+        return;
+      }
+
+      container.innerHTML = "";
+      realQueueMessages.forEach(item => {
+        let timeStr = "Just now";
+        if (item.timestamp && item.timestamp.toDate) {
+          timeStr = item.timestamp.toDate().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+        }
+
+        const sourceLabel = item.source === 'ANDROID_APP' ? 
+          `<span class="text-[9px] font-bold text-[#6B7280] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 mr-2"><i class="fa-solid fa-mobile-screen mr-1 text-[#0057FF]"></i>Phone</span>` :
+          `<span class="text-[9px] font-bold text-[#6B7280] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 mr-2"><i class="fa-solid fa-laptop mr-1 text-[#0057FF]"></i>Web</span>`;
+
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between p-2.5 rounded-xl border border-[#E5E9F0] hover:bg-slate-50 text-xs transition";
+        row.innerHTML = `
+          <div class="space-y-0.5">
+            <div class="flex items-center space-x-1.5">
+              ${sourceLabel}
+              <span class="font-bold font-mono text-[#111827]">${item.recipientName ? `${item.recipientName} (${item.recipient})` : item.recipient}</span>
+            </div>
+            <p class="text-[11px] text-[#6B7280] line-clamp-1">${item.message}</p>
+          </div>
+          <div class="text-right">
+            <span class="font-bold text-[11px] ${item.status === 'SENT' ? 'text-[#16A36A]' : (item.status === 'FAILED' ? 'text-[#E5484D]' : 'text-[#0057FF]')}">${item.status}</span>
+            <p class="text-[10px] text-[#9CA3AF]">${timeStr}</p>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    async function clearAllHistory() {
+      if (!confirm("Are you sure you want to clear all dispatch history? This will clear history on both the Web Dashboard and your Android phone.")) return;
+      if (!boundDeviceId || !db) return;
+      try {
+        const snap = await db.collection('devices').doc(boundDeviceId).collection('history').get();
+        const batch = db.batch();
+        snap.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+        realHistoryMessages = [];
+        recomputeStatsAndRender();
+        showToast("All history cleared", "info");
+      } catch (e) {
+        console.error("Error clearing history:", e);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // DISPATCH REAL SMS THROUGH ANDROID SIM
+    // -------------------------------------------------------------------------
+    async function dispatchRealSms() {
+      if (!boundDeviceId) {
+        alert("No mobile phone is currently linked. Please scan the QR code first.");
+        navigateTo('connect');
+        return;
+      }
+
+      const recipientsRaw = document.getElementById('recipientInput').value.trim();
+      const message = document.getElementById('messageInput').value.trim();
+
+      if (!recipientsRaw) {
+        alert("Please enter at least one recipient telephone number.");
+        return;
+      }
+      if (!message) {
+        alert("Please type a message to send.");
+        return;
+      }
+
+      const recipients = recipientsRaw.split(',').map(r => r.trim()).filter(r => r.length > 0);
+      const sendBtn = document.getElementById('sendBtn');
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Queueing to Phone...`;
+
+      try {
+        const queueRef = db.collection('devices').doc(boundDeviceId).collection('outgoing_queue');
+
+        for (const recipient of recipients) {
+          const messageId = "web_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+
+          await queueRef.doc(messageId).set({
+            recipient: recipient,
+            message: message,
+            status: "PENDING",
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          if (sendPacingMs > 0) {
+            await new Promise(r => setTimeout(r, sendPacingMs));
+          }
+        }
+
+        document.getElementById('recipientInput').value = "";
+        document.getElementById('messageInput').value = "";
+        document.getElementById('charCountLabel').innerText = "0 characters";
+        document.getElementById('smsPartBadge').innerText = "1 SMS (GSM-7)";
+
+        showToast(`Dispatched ${recipients.length} SMS to Android phone!`, "success");
+
+      } catch (err) {
+        console.error("Queue dispatch error:", err);
+        showToast("Error queueing message: " + err.message, "error");
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = `<i class="fa-solid fa-paper-plane mr-2 text-xs"></i><span>Send SMS via Phone SIM</span>`;
+        document.getElementById('sendMenuDropdown')?.classList.remove('show');
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // COMPOSER UTILITIES (Tags, Emojis, Templates)
+    // -------------------------------------------------------------------------
+    function initCharacterCounter() {
+      const textarea = document.getElementById('messageInput');
+      const countLabel = document.getElementById('charCountLabel');
+      const partBadge = document.getElementById('smsPartBadge');
+
+      if (!textarea) return;
+
+      textarea.addEventListener('input', () => {
+        const text = textarea.value;
+        const len = text.length;
+        const isUnicode = /[^\u0000-\u007F]/.test(text);
+
+        let parts = 1;
+        if (!isUnicode) {
+          if (len > 160) parts = Math.ceil(len / 153);
+          partBadge.innerText = `${parts} SMS (GSM-7)`;
+          partBadge.className = "bg-[#F0FDF4] text-[#16A36A] border border-[#BBF7D0] font-bold text-[10px] px-2 py-0.5 rounded";
+        } else {
+          if (len > 70) parts = Math.ceil(len / 67);
+          partBadge.innerText = `${parts} SMS (Unicode)`;
+          partBadge.className = "bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A] font-bold text-[10px] px-2 py-0.5 rounded";
+        }
+        countLabel.innerText = `${len} characters`;
+      });
+    }
+
+    function clearComposer() {
+      document.getElementById('recipientInput').value = "";
+      document.getElementById('messageInput').value = "";
+      document.getElementById('charCountLabel').innerText = "0 characters";
+      document.getElementById('smsPartBadge').innerText = "1 SMS (GSM-7)";
+      showToast("Composer cleared", "info");
+    }
+
+    function focusMessageComposer() {
+      const input = document.getElementById('messageInput');
+      if (input) {
+        input.focus();
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function insertTagIntoMessage(tag) {
+      const textarea = document.getElementById('messageInput');
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+
+      textarea.value = text.substring(0, start) + tag + text.substring(end);
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + tag.length;
+      textarea.dispatchEvent(new Event('input'));
+
+      document.getElementById('tagDropdown')?.classList.remove('show');
+    }
+
+    function insertEmoji(emoji) {
+      const textarea = document.getElementById('messageInput');
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+
+      textarea.value = text.substring(0, start) + emoji + text.substring(end);
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+      textarea.dispatchEvent(new Event('input'));
+
+      document.getElementById('emojiPicker')?.classList.remove('show');
+    }
+
+    function renderQuickTemplateChips() {
+      const container = document.getElementById('quickTemplatesChips');
+      if (!container) return;
+
+      container.innerHTML = "";
+      userTemplates.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = "flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] text-xs font-medium text-[#334155] transition";
+        btn.innerHTML = `<i class="fa-regular fa-bookmark text-[#0057FF]"></i><span>${t.title}</span>`;
+        btn.onclick = () => {
+          const textarea = document.getElementById('messageInput');
+          textarea.value = t.text;
+          textarea.dispatchEvent(new Event('input'));
+          showToast(`Loaded "${t.title}"`, "info");
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function renderTemplatesList() {
+      const container = document.getElementById('templatesListContainer');
+      if (!container) return;
+
+      container.innerHTML = "";
+      userTemplates.forEach(t => {
+        const item = document.createElement('div');
+        item.className = "p-3 rounded-2xl border border-[#E5E9F0] bg-white hover:border-[#0057FF] transition space-y-1";
+        item.innerHTML = `
+          <div class="flex items-center justify-between">
+            <h5 class="font-bold text-xs text-[#111827]">${t.title}</h5>
+            <button onclick="useTemplate('${t.id}')" class="text-xs font-bold text-[#0057FF] hover:underline">Use</button>
+          </div>
+          <p class="text-xs text-[#6B7280] line-clamp-2">${t.text}</p>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function useTemplate(tmplId) {
+      const tmpl = userTemplates.find(t => t.id === tmplId);
+      if (tmpl) {
+        const textarea = document.getElementById('messageInput');
+        textarea.value = tmpl.text;
+        textarea.dispatchEvent(new Event('input'));
+        closeModal('modalTemplates');
+        showToast(`Template "${tmpl.title}" loaded`, "info");
+      }
+    }
+
+    function saveCurrentAsTemplate() {
+      const text = document.getElementById('messageInput').value.trim();
+      if (!text) {
+        alert("Please type a message in the body first.");
+        return;
+      }
+      const title = prompt("Enter a name for this template:", "New Template");
+      if (!title) return;
+
+      const newId = "t_" + Date.now();
+      const newTemplate = { id: newId, title: title, text: text, content: text, category: "Custom" };
+      userTemplates.push(newTemplate);
+      localStorage.setItem('simplesms_user_templates', JSON.stringify(userTemplates));
+
+      if (boundDeviceId && db) {
+        db.collection('devices').doc(boundDeviceId).collection('sync').doc('templates').set({
+          templates: userTemplates,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).catch(console.warn);
+      }
+
+      renderTemplatesList();
+      renderQuickTemplateChips();
+      showToast(`Saved template "${title}"`, "success");
+    }
+
+    // -------------------------------------------------------------------------
+    // CONTACTS MANAGEMENT (Live synced from Android phone)
+    // -------------------------------------------------------------------------
+    function renderContactsList() {
+      const container = document.getElementById('contactsListContainer');
+      if (!container) return;
+
+      container.innerHTML = "";
+
+      if (userContacts.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-xs text-[#9CA3AF]">
+            <i class="fa-solid fa-address-book text-3xl mb-2 text-slate-300 block"></i>
+            <p class="font-bold text-[#111827]">No Contacts Synced Yet</p>
+            <p class="text-[11px] text-[#6B7280] mt-1">Contacts from your Android phone will sync here in real time as soon as you connect your phone and grant Contacts permission.</p>
+          </div>
+        `;
+        return;
+      }
+
+      userContacts.forEach(c => {
+        const isChecked = selectedContactNumbers.includes(c.phone);
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between p-2.5 rounded-xl border border-[#E5E9F0] hover:bg-slate-50 transition cursor-pointer " + (isChecked ? "bg-blue-50/50 border-[#0057FF]" : "");
+        item.onclick = () => toggleContactSelection(c.phone);
+        item.innerHTML = `
+          <div class="flex items-center space-x-2.5">
+            <input type="checkbox" ${isChecked ? 'checked' : ''} class="rounded text-[#0057FF] pointer-events-none">
+            <div>
+              <p class="font-bold text-xs text-[#111827]">${c.name || 'Unknown'}</p>
+              <p class="text-[10px] text-[#6B7280] font-mono">${c.phone}</p>
+            </div>
+          </div>
+          <span class="text-[10px] font-medium text-[#0057FF] bg-[#EFF6FF] px-2 py-0.5 rounded">${c.group || 'Phone'}</span>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function filterContacts(query) {
+      const q = query.toLowerCase();
+      const filtered = userContacts.filter(c => (c.name && c.name.toLowerCase().includes(q)) || (c.phone && c.phone.includes(q)));
+      
+      const container = document.getElementById('contactsListContainer');
+      if (!container) return;
+      container.innerHTML = "";
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-6 text-xs text-[#9CA3AF]">No matching contacts found.</div>`;
+        return;
+      }
+
+      filtered.forEach(c => {
+        const isChecked = selectedContactNumbers.includes(c.phone);
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between p-2.5 rounded-xl border border-[#E5E9F0] hover:bg-slate-50 transition cursor-pointer " + (isChecked ? "bg-blue-50/50 border-[#0057FF]" : "");
+        item.onclick = () => toggleContactSelection(c.phone);
+        item.innerHTML = `
+          <div class="flex items-center space-x-2.5">
+            <input type="checkbox" ${isChecked ? 'checked' : ''} class="rounded text-[#0057FF] pointer-events-none">
+            <div>
+              <p class="font-bold text-xs text-[#111827]">${c.name || 'Unknown'}</p>
+              <p class="text-[10px] text-[#6B7280] font-mono">${c.phone}</p>
+            </div>
+          </div>
+          <span class="text-[10px] font-medium text-[#0057FF] bg-[#EFF6FF] px-2 py-0.5 rounded">${c.group || 'Phone'}</span>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function toggleContactSelection(phone) {
+      if (selectedContactNumbers.includes(phone)) {
+        selectedContactNumbers = selectedContactNumbers.filter(p => p !== phone);
+      } else {
+        selectedContactNumbers.push(phone);
+      }
+      document.getElementById('selectedContactsCount').innerText = `${selectedContactNumbers.length} selected`;
+      renderContactsList();
+    }
+
+    function insertSelectedContacts() {
+      if (selectedContactNumbers.length === 0) {
+        alert("Please select at least one contact.");
+        return;
+      }
+      const input = document.getElementById('recipientInput');
+      const current = input.value.trim();
+      const newAdditions = selectedContactNumbers.join(', ');
+      input.value = current ? `${current}, ${newAdditions}` : newAdditions;
+      closeModal('modalContacts');
+      showToast(`Added ${selectedContactNumbers.length} contact(s)`, "success");
+      selectedContactNumbers = [];
+    }
+
+    function promptAddNewContact() {
+      const name = prompt("Contact Name:");
+      if (!name) return;
+      const phone = prompt("Phone Number (with country code):");
+      if (!phone) return;
+
+      const newContact = { name: name, phone: phone, group: "Web Custom" };
+      userContacts.push(newContact);
+      localStorage.setItem('simplesms_user_contacts', JSON.stringify(userContacts));
+      renderContactsList();
+      renderBroadcastGroups();
+
+      if (boundDeviceId && db) {
+        db.collection('devices').doc(boundDeviceId).collection('sync').doc('contacts').set({
+          contacts: userContacts,
+          totalCount: userContacts.length,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).catch(console.warn);
+      }
+
+      showToast(`Saved ${name}`, "success");
+    }
+
+    // -------------------------------------------------------------------------
+    // MODAL HELPERS & DROPDOWNS
+    // -------------------------------------------------------------------------
+    function openModal(id) { document.getElementById(id)?.classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id)?.classList.add('hidden'); }
+
+    function openDeviceStatusModal() { openModal('modalDeviceStatus'); }
+    function openContactsModal() { openModal('modalContacts'); }
+    function openTemplatesModal() { openModal('modalTemplates'); }
+    function openScheduleModal() { openModal('modalSchedule'); }
+    function openBroadcastModal() {
+      renderBroadcastGroups();
+      openModal('modalBroadcast');
+    }
+    function openDeliveryReportsModal() { openModal('modalDeliveryReports'); }
+    function openMessageHistoryModal() { openModal('modalDeliveryReports'); }
+    function openProModal() { openModal('modalPro'); }
+    function openRulesModal() { openModal('modalRules'); }
+    function openHowItWorksModal() { openModal('modalHowItWorks'); }
+
+    function openFeatureExploreModal(feature) {
+      if (feature === 'security') openModal('modalHowItWorks');
+      else if (feature === 'send') navigateTo('connect');
+      else if (feature === 'contacts') openContactsModal();
+      else if (feature === 'templates') openTemplatesModal();
+      else if (feature === 'broadcast') openBroadcastModal();
+      else if (feature === 'schedule') openScheduleModal();
+      else if (feature === 'reports') openDeliveryReportsModal();
+    }
+
+    function toggleTagDropdown() { document.getElementById('tagDropdown')?.classList.toggle('show'); }
+    function toggleEmojiPicker() { document.getElementById('emojiPicker')?.classList.toggle('show'); }
+    function toggleSendMenu() { document.getElementById('sendMenuDropdown')?.classList.toggle('show'); }
+    function toggleProfileDropdown() { document.getElementById('profileDropdown')?.classList.toggle('show'); }
+
+    function setRecipientMode(mode) {
+      if (mode === 'numbers') document.getElementById('recipientInput')?.focus();
+    }
+
+    function setSendPacing(pacingMs) {
+      sendPacingMs = pacingMs;
+      showToast(`Pacing set to ${pacingMs / 1000}s`, "info");
+    }
+
+    function renderBroadcastGroups() {
+      const container = document.getElementById('broadcastGroupList');
+      if (!container) return;
+
+      container.innerHTML = "";
+
+      if (userContacts.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-6 text-xs text-[#9CA3AF]">
+            <i class="fa-solid fa-bullhorn text-2xl mb-2 text-slate-300 block"></i>
+            No contact groups available yet. Sync contacts from Android to broadcast messages to groups.
+          </div>
+        `;
+        return;
+      }
+
+      // Add "All Synced Contacts" master broadcast group
+      const allBtn = document.createElement('button');
+      allBtn.className = "w-full border-2 border-[#0057FF]/30 hover:border-[#0057FF] bg-[#EFF6FF]/40 rounded-xl p-3 text-left transition flex items-center justify-between";
+      allBtn.innerHTML = `
+        <div class="flex items-center space-x-2.5">
+          <div class="w-7 h-7 rounded-lg bg-[#0057FF] text-white flex items-center justify-center text-xs">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div>
+            <h5 class="font-bold text-[#0057FF] text-xs">All Synced Contacts</h5>
+            <p class="text-[10px] text-[#6B7280]">${userContacts.length} recipient numbers</p>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-xs text-[#0057FF]"></i>
+      `;
+      allBtn.onclick = () => {
+        const numbers = userContacts.map(c => c.phone);
+        document.getElementById('recipientInput').value = numbers.join(', ');
+        closeModal('modalBroadcast');
+        showToast(`Loaded all ${numbers.length} recipients`, "success");
+      };
+      container.appendChild(allBtn);
+
+      const groups = {};
+      userContacts.forEach(c => {
+        const g = c.group || 'Phone Contacts';
+        groups[g] = (groups[g] || 0) + 1;
+      });
+
+      Object.keys(groups).forEach(gName => {
+        const btn = document.createElement('button');
+        btn.className = "w-full border border-[#E5E9F0] hover:border-[#0057FF] bg-white rounded-xl p-3 text-left transition flex items-center justify-between";
+        btn.innerHTML = `
+          <div>
+            <h5 class="font-bold text-[#111827] text-xs">${gName}</h5>
+            <p class="text-[10px] text-[#6B7280]">${groups[gName]} contact(s)</p>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
+        `;
+        btn.onclick = () => {
+          const numbers = userContacts.filter(c => (c.group || 'Phone Contacts') === gName).map(c => c.phone);
+          document.getElementById('recipientInput').value = numbers.join(', ');
+          closeModal('modalBroadcast');
+          showToast(`Loaded ${numbers.length} recipients from "${gName}"`, "success");
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    async function confirmScheduleSms() {
+      const date = document.getElementById('scheduleDate').value;
+      const time = document.getElementById('scheduleTime').value;
+      if (!date || !time) {
+        alert("Please choose date and time.");
+        return;
+      }
+      const recipientsRaw = document.getElementById('recipientInput').value.trim();
+      const message = document.getElementById('messageInput').value.trim();
+      if (recipientsRaw && message && boundDeviceId && db) {
+        try {
+          const recipients = recipientsRaw.split(',').map(r => r.trim()).filter(r => r.length > 0);
+          const queueRef = db.collection('devices').doc(boundDeviceId).collection('outgoing_queue');
+          for (const recipient of recipients) {
+            const messageId = "web_sched_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+            await queueRef.doc(messageId).set({
+              recipient: recipient,
+              message: message,
+              status: "PENDING",
+              scheduledFor: `${date} ${time}`,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          }
+          document.getElementById('recipientInput').value = "";
+          document.getElementById('messageInput').value = "";
+          showToast(`Scheduled & queued ${recipients.length} message(s) for ${date} at ${time}`, "success");
+        } catch (e) {
+          console.error("Schedule error:", e);
+          showToast("Error scheduling SMS: " + e.message, "error");
+        }
+      } else {
+        showToast(`Scheduled for ${date} at ${time}`, "success");
+      }
+      closeModal('modalSchedule');
+    }
+
+    function exportDispatchHistoryCsv() {
+      if (realQueueMessages.length === 0) {
+        alert("No dispatch records available yet to export.");
+        return;
+      }
+
+      let csv = "ID,Recipient,Message,Status,Timestamp\n";
+      realQueueMessages.forEach(m => {
+        const dateStr = (m.timestamp && m.timestamp.toDate) ? m.timestamp.toDate().toISOString() : "";
+        csv += `"${m.id}","${m.recipient}","${(m.message || '').replace(/"/g, '""')}","${m.status}","${dateStr}"\n`;
+      });
+
+      const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csv);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `SimpleSMS_History_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast("Dispatch records exported as CSV", "success");
+    }
+
+    function showToast(message, type = "info") {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+
+      if (!toast || !toastMsg) return;
+
+      toastMsg.innerText = message;
+      if (type === "success") {
+        toastIcon.innerHTML = `<i class="fa-solid fa-circle-check text-[#16A36A]"></i>`;
+      } else if (type === "error") {
+        toastIcon.innerHTML = `<i class="fa-solid fa-circle-exclamation text-[#E5484D]"></i>`;
+      } else {
+        toastIcon.innerHTML = `<i class="fa-solid fa-circle-info text-[#0057FF]"></i>`;
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+    }
+
+    // Close dropdown menus when clicking outside
+    window.addEventListener('click', (e) => {
+      if (!e.target.closest('#tagDropdown') && !e.target.closest('button[onclick="toggleTagDropdown()"]')) {
+        document.getElementById('tagDropdown')?.classList.remove('show');
+      }
+      if (!e.target.closest('#emojiPicker') && !e.target.closest('button[onclick="toggleEmojiPicker()"]')) {
+        document.getElementById('emojiPicker')?.classList.remove('show');
+      }
+      if (!e.target.closest('#sendMenuDropdown') && !e.target.closest('button[onclick="toggleSendMenu()"]')) {
+        document.getElementById('sendMenuDropdown')?.classList.remove('show');
+      }
+      if (!e.target.closest('#profileDropdown') && !e.target.closest('button[onclick="toggleProfileDropdown()"]')) {
+        document.getElementById('profileDropdown')?.classList.remove('show');
+      }
+    });
+  </script>
+</body>
+</html>
