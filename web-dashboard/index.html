@@ -105,6 +105,32 @@
     .dropdown-menu.show {
       display: block;
     }
+
+    /* Mobile scrollbar hiding utility */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Prevent accidental text-size adjust on orientation change */
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* Remove tap gray box on mobile */
+    button, a, input, textarea {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Prevent iOS auto-zoom on input focus */
+    @media (max-width: 640px) {
+      input[type="text"], input[type="search"], textarea, select {
+        font-size: 16px !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col bg-[#F8F7F4] text-[#111827]">
@@ -112,25 +138,25 @@
   <!-- ===================================================================== -->
   <!-- 1. PUBLIC WEBSITE HEADER (Shown on Home & Connect views)              -->
   <!-- ===================================================================== -->
-  <header id="publicHeader" class="bg-white border-b border-[#E5E9F0] sticky top-0 z-40 px-5 lg:px-10 py-3.5 flex items-center justify-between shadow-xs">
+  <header id="publicHeader" class="bg-white border-b border-[#E5E9F0] sticky top-0 z-40 px-4 sm:px-6 lg:px-10 py-3 sm:py-3.5 flex items-center justify-between shadow-xs">
     <!-- Brand -->
-    <a href="#home" onclick="navigateTo('home'); return false;" class="flex items-center space-x-3 group">
-      <div class="w-10 h-10 rounded-xl bg-[#0057FF] flex items-center justify-center text-white shadow-sm transition transform group-hover:scale-105">
-        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+    <a href="#home" onclick="navigateTo('home'); return false;" class="flex items-center space-x-2.5 sm:space-x-3 group min-w-0">
+      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0057FF] flex items-center justify-center text-white shadow-sm transition transform group-hover:scale-105 shrink-0">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="currentColor">
           <path d="M4.5 3.75h15c1.24 0 2.25 1.01 2.25 2.25v10.5c0 1.24-1.01 2.25-2.25 2.25H8.625L4.125 21.75V18.75H4.5c-1.24 0-2.25-1.01-2.25-2.25V6c0-1.24 1.01-2.25 2.25-2.25zM8 12a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5zm4 0a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5zm4 0a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5z"/>
         </svg>
       </div>
-      <div>
+      <div class="min-w-0">
         <div class="flex items-center space-x-2">
-          <span class="font-extrabold text-base tracking-tight text-[#111827]">Simple SMS</span>
-          <span class="bg-[#EFF6FF] text-[#0057FF] border border-[#BFDBFE] text-[10px] font-bold px-2 py-0.5 rounded-full">Desktop Gateway</span>
+          <span class="font-extrabold text-sm sm:text-base tracking-tight text-[#111827]">Simple SMS</span>
+          <span class="hidden sm:inline-flex bg-[#EFF6FF] text-[#0057FF] border border-[#BFDBFE] text-[10px] font-bold px-2 py-0.5 rounded-full">Desktop Gateway</span>
         </div>
-        <p class="text-[11px] text-[#6B7280]">Send SMS from your Android phone's SIM</p>
+        <p class="text-[10px] sm:text-[11px] text-[#6B7280] truncate">Send SMS from Android SIM</p>
       </div>
     </a>
 
     <!-- Public Navigation Links & CTA -->
-    <div class="flex items-center space-x-6">
+    <div class="flex items-center space-x-2.5 sm:space-x-6 shrink-0">
       <nav class="hidden md:flex items-center space-x-6 text-xs font-semibold text-[#4B5563]">
         <a href="#home" onclick="navigateTo('home'); return false;" class="hover:text-[#0057FF] transition">Home</a>
         <a href="javascript:void(0)" onclick="openHowItWorksModal()" class="hover:text-[#0057FF] transition">How It Works</a>
@@ -138,9 +164,9 @@
       </nav>
 
       <!-- Connect Phone CTA -->
-      <a href="#connect" onclick="navigateTo('connect'); return false;" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition flex items-center space-x-2">
-        <i class="fa-solid fa-qrcode text-sm"></i>
-        <span>Connect Phone</span>
+      <a href="#connect" onclick="navigateTo('connect'); return false;" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl shadow-xs transition flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+        <i class="fa-solid fa-qrcode text-xs sm:text-sm"></i>
+        <span>Connect<span class="hidden sm:inline"> Phone</span></span>
       </a>
     </div>
   </header>
@@ -148,58 +174,62 @@
   <!-- ===================================================================== -->
   <!-- 2. AUTHENTICATED DASHBOARD HEADER (Shown only when phone is paired)   -->
   <!-- ===================================================================== -->
-  <header id="dashboardHeader" class="hidden bg-white border-b border-[#E5E9F0] sticky top-0 z-40 px-5 lg:px-8 py-3 flex items-center justify-between shadow-xs">
+  <header id="dashboardHeader" class="hidden bg-white border-b border-[#E5E9F0] sticky top-0 z-40 px-3 sm:px-5 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between shadow-xs">
     
-    <!-- Brand -->
-    <div class="flex items-center space-x-3.5">
-      <a href="#dashboard" onclick="navigateTo('dashboard'); return false;" class="flex items-center space-x-3 group">
-        <div class="w-10 h-10 rounded-xl bg-[#0057FF] flex items-center justify-center text-white shadow-sm transition transform group-hover:scale-105">
-          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+    <!-- Left: Mobile Menu Toggle + Brand -->
+    <div class="flex items-center space-x-2 sm:space-x-3.5 min-w-0">
+      <button onclick="toggleMobileSidebar()" class="lg:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-[#E5E9F0] bg-white hover:bg-slate-50 text-[#111827] flex items-center justify-center transition shadow-xs shrink-0" title="Toggle Navigation Menu">
+        <i class="fa-solid fa-bars text-sm"></i>
+      </button>
+
+      <a href="#dashboard" onclick="navigateTo('dashboard'); return false;" class="flex items-center space-x-2 sm:space-x-3 group min-w-0">
+        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#0057FF] flex items-center justify-center text-white shadow-sm transition transform group-hover:scale-105 shrink-0">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="currentColor">
             <path d="M4.5 3.75h15c1.24 0 2.25 1.01 2.25 2.25v10.5c0 1.24-1.01 2.25-2.25 2.25H8.625L4.125 21.75V18.75H4.5c-1.24 0-2.25-1.01-2.25-2.25V6c0-1.24 1.01-2.25 2.25-2.25zM8 12a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5zm4 0a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5zm4 0a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5z"/>
           </svg>
         </div>
-        <div>
-          <div class="flex items-center space-x-2">
-            <h1 class="font-extrabold text-base tracking-tight text-[#111827]">Simple SMS</h1>
-            <span class="bg-[#EFF6FF] text-[#0057FF] border border-[#BFDBFE] text-[11px] font-bold px-2 py-0.5 rounded-full">Desktop Gateway</span>
+        <div class="min-w-0">
+          <div class="flex items-center space-x-1.5 sm:space-x-2">
+            <h1 class="font-extrabold text-sm sm:text-base tracking-tight text-[#111827] truncate">Simple SMS</h1>
+            <span class="hidden md:inline-flex bg-[#EFF6FF] text-[#0057FF] border border-[#BFDBFE] text-[10px] font-bold px-2 py-0.5 rounded-full">Gateway</span>
           </div>
-          <p class="text-[11px] text-[#6B7280]">Send SMS from your Android phone's SIM</p>
+          <p class="text-[10px] sm:text-[11px] text-[#6B7280] hidden sm:block truncate">Send SMS from Android SIM</p>
         </div>
       </a>
     </div>
 
     <!-- Center/Right: Live Phone Status, Sync Refresh & Avatar -->
-    <div class="flex items-center space-x-3">
+    <div class="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
 
       <!-- Live Phone Connection Status Pill -->
-      <div id="headerStatusPill" class="bg-white border border-[#E5E9F0] px-3.5 py-1.5 rounded-full flex items-center space-x-2.5 shadow-xs cursor-pointer hover:border-[#BFDBFE] transition" onclick="openDeviceStatusModal()">
-        <span class="relative flex h-2.5 w-2.5">
+      <div id="headerStatusPill" class="bg-white border border-[#E5E9F0] px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full flex items-center space-x-1.5 sm:space-x-2.5 shadow-xs cursor-pointer hover:border-[#BFDBFE] transition" onclick="openDeviceStatusModal()">
+        <span class="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
           <span id="headerStatusPing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#16A36A] opacity-75"></span>
-          <span id="headerStatusDot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#16A36A]"></span>
+          <span id="headerStatusDot" class="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-[#16A36A]"></span>
         </span>
         <div class="text-left leading-tight">
-          <div class="text-xs font-bold text-[#111827]" id="headerStatusTitle">Phone Connected</div>
-          <div class="text-[10px] text-[#6B7280]" id="headerDeviceSub">Loading device data...</div>
+          <div class="text-xs font-bold text-[#111827]" id="headerStatusTitle">Connected</div>
+          <div class="text-[10px] text-[#6B7280] hidden sm:block max-w-[120px] truncate" id="headerDeviceSub">Loading...</div>
         </div>
       </div>
 
       <!-- Refresh / Sync Button -->
-      <button onclick="refreshPhoneData()" title="Sync phone status" class="w-9 h-9 rounded-xl border border-[#E5E9F0] bg-white hover:bg-slate-50 text-[#6B7280] hover:text-[#111827] flex items-center justify-center transition shadow-xs">
+      <button onclick="refreshPhoneData()" title="Sync phone status" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-[#E5E9F0] bg-white hover:bg-slate-50 text-[#6B7280] hover:text-[#111827] flex items-center justify-center transition shadow-xs">
         <i class="fa-solid fa-arrows-rotate text-xs" id="refreshIcon"></i>
       </button>
 
       <!-- Notification Bell -->
-      <button onclick="showToast('Cellular gateway active. Ready to dispatch SMS.', 'info')" title="Notifications" class="relative w-9 h-9 rounded-xl border border-[#E5E9F0] bg-white hover:bg-slate-50 text-[#6B7280] hover:text-[#111827] flex items-center justify-center transition shadow-xs">
+      <button onclick="showToast('Cellular gateway active. Ready to dispatch SMS.', 'info')" title="Notifications" class="hidden sm:flex w-9 h-9 rounded-xl border border-[#E5E9F0] bg-white hover:bg-slate-50 text-[#6B7280] hover:text-[#111827] items-center justify-center transition shadow-xs">
         <i class="fa-regular fa-bell text-sm"></i>
       </button>
 
       <!-- User Avatar Pill with Menu Dropdown -->
       <div class="relative">
-        <button onclick="toggleProfileDropdown()" class="flex items-center space-x-1.5 bg-white border border-[#E5E9F0] pl-1 pr-2.5 py-1 rounded-full hover:bg-slate-50 transition shadow-xs">
-          <div class="w-7 h-7 rounded-full bg-[#0057FF] text-white font-bold text-xs flex items-center justify-center">
-            <i class="fa-solid fa-user text-xs"></i>
+        <button onclick="toggleProfileDropdown()" class="flex items-center space-x-1 sm:space-x-1.5 bg-white border border-[#E5E9F0] pl-1 pr-2 sm:pr-2.5 py-1 rounded-full hover:bg-slate-50 transition shadow-xs">
+          <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#0057FF] text-white font-bold text-xs flex items-center justify-center">
+            <i class="fa-solid fa-user text-[11px] sm:text-xs"></i>
           </div>
-          <i class="fa-solid fa-chevron-down text-[10px] text-[#6B7280]"></i>
+          <i class="fa-solid fa-chevron-down text-[9px] sm:text-[10px] text-[#6B7280]"></i>
         </button>
 
         <!-- Dropdown Menu -->
@@ -232,44 +262,44 @@
     <!-- =================================================================== -->
     <!-- VIEW A: HOME SCREEN / LANDING PAGE (Exact Match to Prompt)          -->
     <!-- =================================================================== -->
-    <section id="viewHome" class="flex-1 overflow-y-auto p-5 lg:p-10 max-w-7xl mx-auto space-y-8">
+    <section id="viewHome" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       
       <!-- Top Hero Banner Card -->
-      <div class="bg-gradient-to-br from-[#EBF5FF] via-[#F4F8FF] to-white border border-[#DBEAFE] rounded-3xl p-8 lg:p-12 relative overflow-hidden shadow-sm">
+      <div class="bg-gradient-to-br from-[#EBF5FF] via-[#F4F8FF] to-white border border-[#DBEAFE] rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-12 relative overflow-hidden shadow-sm">
         
         <!-- Soft background glow shapes -->
         <div class="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-blue-200/20 blur-3xl pointer-events-none"></div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center relative z-10">
           
           <!-- Left 7 cols: Copy & CTAs -->
-          <div class="lg:col-span-7 space-y-6">
+          <div class="lg:col-span-7 space-y-4 sm:space-y-6">
             <span class="text-xs font-black tracking-wider text-[#0057FF] uppercase">WELCOME TO SIMPLE SMS</span>
-            <h1 class="text-3xl lg:text-4xl font-black text-[#111827] tracking-tight leading-tight">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-black text-[#111827] tracking-tight leading-tight">
               Send SMS from your <span class="text-[#0057FF]">Android phone</span>, right from your computer.
             </h1>
-            <p class="text-sm text-[#4B5563] leading-relaxed max-w-xl">
+            <p class="text-xs sm:text-sm text-[#4B5563] leading-relaxed max-w-xl">
               Messages are sent using your phone's physical SIM card. No extra cost. No third-party services. Keep your data private.
             </p>
 
             <!-- Buttons -->
-            <div class="flex items-center gap-3 pt-1">
-              <a href="#connect" onclick="navigateTo('connect'); return false;" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-sm px-6 py-3.5 rounded-xl flex items-center space-x-2 shadow-xs transition">
-                <i class="fa-solid fa-qrcode text-base"></i>
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1">
+              <a href="#connect" onclick="navigateTo('connect'); return false;" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs sm:text-sm px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl flex items-center justify-center space-x-2 shadow-xs transition">
+                <i class="fa-solid fa-qrcode text-sm sm:text-base"></i>
                 <span>Connect your phone</span>
                 <i class="fa-solid fa-chevron-right text-xs ml-1"></i>
               </a>
-              <button onclick="openHowItWorksModal()" class="bg-white hover:bg-slate-50 text-[#111827] border border-[#E5E9F0] font-bold text-sm px-5 py-3.5 rounded-xl transition flex items-center space-x-2">
+              <button onclick="openHowItWorksModal()" class="bg-white hover:bg-slate-50 text-[#111827] border border-[#E5E9F0] font-bold text-xs sm:text-sm px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl transition flex items-center justify-center space-x-2">
                 <i class="fa-regular fa-circle-play text-[#0057FF]"></i>
                 <span>How it works</span>
               </button>
             </div>
 
             <!-- 4 Feature Pills -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-[#E5E9F0]/80">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 pt-4 border-t border-[#E5E9F0]/80">
               <div class="flex items-center space-x-2">
                 <i class="fa-solid fa-bolt text-[#0057FF] text-xs"></i>
-                <span class="text-xs font-semibold text-[#374151]">Uses your phone's SIM</span>
+                <span class="text-xs font-semibold text-[#374151]">Uses phone SIM</span>
               </div>
               <div class="flex items-center space-x-2">
                 <i class="fa-solid fa-shield-halved text-[#16A36A] text-xs"></i>
@@ -277,11 +307,11 @@
               </div>
               <div class="flex items-center space-x-2">
                 <i class="fa-solid fa-arrows-rotate text-[#D98A12] text-xs"></i>
-                <span class="text-xs font-semibold text-[#374151]">Real-time delivery status</span>
+                <span class="text-xs font-semibold text-[#374151]">Real-time status</span>
               </div>
               <div class="flex items-center space-x-2">
                 <i class="fa-solid fa-wand-magic-sparkles text-[#9333EA] text-xs"></i>
-                <span class="text-xs font-semibold text-[#374151]">Powerful tools & automation</span>
+                <span class="text-xs font-semibold text-[#374151]">Powerful tools</span>
               </div>
             </div>
 
@@ -289,7 +319,7 @@
 
           <!-- Right 5 cols: Vector Workspace Artwork Scene (SVG) -->
           <div class="lg:col-span-5 flex items-center justify-center">
-            <svg class="w-full max-w-[390px] h-auto drop-shadow-md select-none" viewBox="0 0 380 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg class="w-full max-w-[280px] sm:max-w-[340px] lg:max-w-[390px] h-auto drop-shadow-md select-none mx-auto" viewBox="0 0 380 200" fill="none" xmlns="http://www.w3.org/2000/svg">
               <ellipse cx="190" cy="180" rx="170" ry="12" fill="#0057FF" fill-opacity="0.07" />
 
               <!-- Desk coffee mug -->
@@ -363,8 +393,8 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         <!-- Left Card: Get started in 3 simple steps -->
-        <div class="bg-white border border-[#E5E9F0] rounded-3xl p-7 shadow-xs space-y-6 flex flex-col justify-between">
-          <div class="space-y-5">
+        <div class="bg-white border border-[#E5E9F0] rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-xs space-y-5 sm:space-y-6 flex flex-col justify-between">
+          <div class="space-y-4 sm:space-y-5">
             <div class="flex items-center space-x-3">
               <div class="w-10 h-10 rounded-2xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-lg shadow-xs">
                 <i class="fa-solid fa-rocket"></i>
@@ -376,7 +406,7 @@
             </div>
 
             <!-- Steps timeline -->
-            <div class="space-y-4 pt-2">
+            <div class="space-y-3.5 sm:space-y-4 pt-1 sm:pt-2">
               <div class="flex items-start space-x-3.5">
                 <span class="w-7 h-7 rounded-lg bg-[#EFF6FF] text-[#0057FF] font-bold text-xs flex items-center justify-center shrink-0">1</span>
                 <div>
@@ -411,7 +441,7 @@
         </div>
 
         <!-- Right Card: What you can do (6 Interactive Feature Tiles) -->
-        <div class="bg-white border border-[#E5E9F0] rounded-3xl p-7 shadow-xs space-y-4">
+        <div class="bg-white border border-[#E5E9F0] rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-xs space-y-4">
           <div class="flex items-center space-x-3">
             <div class="w-10 h-10 rounded-2xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-lg shadow-xs">
               <i class="fa-solid fa-table-cells-large"></i>
@@ -422,41 +452,41 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 pt-2">
+          <div class="grid grid-cols-2 gap-2 sm:gap-3 pt-2">
             <div onclick="openFeatureExploreModal('send')" class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0057FF] rounded-2xl cursor-pointer transition space-y-1">
               <i class="fa-solid fa-paper-plane text-[#0057FF] text-sm"></i>
               <h5 class="font-bold text-xs text-[#111827]">Send SMS</h5>
-              <p class="text-[10px] text-[#6B7280]">Type on your computer, send through phone SIM.</p>
+              <p class="text-[10px] text-[#6B7280]">Type on computer, send via SIM.</p>
             </div>
 
             <div onclick="openFeatureExploreModal('contacts')" class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0057FF] rounded-2xl cursor-pointer transition space-y-1">
               <i class="fa-solid fa-user-group text-[#16A36A] text-sm"></i>
               <h5 class="font-bold text-xs text-[#111827]">Manage Contacts</h5>
-              <p class="text-[10px] text-[#6B7280]">Pick contacts or import recipient lists.</p>
+              <p class="text-[10px] text-[#6B7280]">Pick contacts or import lists.</p>
             </div>
 
             <div onclick="openFeatureExploreModal('templates')" class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0057FF] rounded-2xl cursor-pointer transition space-y-1">
               <i class="fa-solid fa-file-lines text-[#9333EA] text-sm"></i>
               <h5 class="font-bold text-xs text-[#111827]">Use Templates</h5>
-              <p class="text-[10px] text-[#6B7280]">Save reusable messages with {name} tags.</p>
+              <p class="text-[10px] text-[#6B7280]">Save messages with {name} tags.</p>
             </div>
 
             <div onclick="openFeatureExploreModal('broadcast')" class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0057FF] rounded-2xl cursor-pointer transition space-y-1">
               <i class="fa-solid fa-bullhorn text-[#D97706] text-sm"></i>
               <h5 class="font-bold text-xs text-[#111827]">Send to Groups</h5>
-              <p class="text-[10px] text-[#6B7280]">Broadcast announcements with pacing.</p>
+              <p class="text-[10px] text-[#6B7280]">Broadcast with anti-spam pacing.</p>
             </div>
 
             <div onclick="openFeatureExploreModal('schedule')" class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0057FF] rounded-2xl cursor-pointer transition space-y-1">
               <i class="fa-solid fa-calendar-days text-[#0284C7] text-sm"></i>
               <h5 class="font-bold text-xs text-[#111827]">Schedule SMS</h5>
-              <p class="text-[10px] text-[#6B7280]">Prepare messages to send at a future date.</p>
+              <p class="text-[10px] text-[#6B7280]">Prepare messages for future date.</p>
             </div>
 
             <div onclick="openFeatureExploreModal('reports')" class="p-3 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#0057FF] rounded-2xl cursor-pointer transition space-y-1">
               <i class="fa-solid fa-chart-simple text-[#0057FF] text-sm"></i>
               <h5 class="font-bold text-xs text-[#111827]">View Reports</h5>
-              <p class="text-[10px] text-[#6B7280]">Track real-time carrier delivery status.</p>
+              <p class="text-[10px] text-[#6B7280]">Track real-time carrier delivery.</p>
             </div>
           </div>
         </div>
@@ -476,27 +506,27 @@
     <!-- =================================================================== -->
     <!-- VIEW B: QR CODE PAIRING PAGE                                        -->
     <!-- =================================================================== -->
-    <section id="viewPairing" class="hidden flex-1 overflow-y-auto p-5 lg:p-10 max-w-4xl mx-auto space-y-6">
+    <section id="viewPairing" class="hidden flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 max-w-4xl mx-auto space-y-5 sm:space-y-6">
       
-      <div class="bg-white border border-[#E5E9F0] rounded-3xl p-8 shadow-xs space-y-6">
+      <div class="bg-white border border-[#E5E9F0] rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xs space-y-5 sm:space-y-6">
         
-        <div class="flex items-center justify-between pb-4 border-b border-[#E5E9F0]">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-[#E5E9F0] gap-3">
           <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-lg shadow-xs">
+            <div class="w-10 h-10 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-lg shadow-xs shrink-0">
               <i class="fa-solid fa-qrcode"></i>
             </div>
             <div>
-              <h3 class="font-extrabold text-lg text-[#111827]">Connect Simple SMS App</h3>
+              <h3 class="font-extrabold text-base sm:text-lg text-[#111827]">Connect Simple SMS App</h3>
               <p class="text-xs text-[#6B7280]">Scan this QR code with the Simple SMS Android app on your phone</p>
             </div>
           </div>
           
-          <a href="#home" onclick="navigateTo('home'); return false;" class="text-xs font-bold text-[#6B7280] hover:text-[#111827] bg-[#F1F5F9] px-3.5 py-2 rounded-xl transition">
+          <a href="#home" onclick="navigateTo('home'); return false;" class="text-xs font-bold text-[#6B7280] hover:text-[#111827] bg-[#F1F5F9] px-3.5 py-2 rounded-xl transition flex items-center shrink-0 self-end sm:self-auto">
             <i class="fa-solid fa-arrow-left mr-1.5"></i> Back to Home
           </a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 items-center">
           
           <!-- Instructions (7 cols) -->
           <div class="md:col-span-7 space-y-4">
@@ -525,7 +555,7 @@
             </div>
 
             <div class="p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[11px] text-[#6B7280] flex items-center gap-2.5">
-              <i class="fa-solid fa-shield-halved text-[#16A36A] text-sm"></i>
+              <i class="fa-solid fa-shield-halved text-[#16A36A] text-sm shrink-0"></i>
               <span>Hardware-paired via Google Cloud Firestore with zero third-party intermediaries.</span>
             </div>
 
@@ -540,10 +570,10 @@
               <p class="text-[11px] text-[#64748B]">Can't scan the QR? Open Simple SMS app, tap <strong class="text-[#1E293B]">"Enter Pairing Code Manually"</strong>, and enter:</p>
               
               <div class="flex items-center gap-2">
-                <div class="flex-1 bg-white border-2 border-[#0057FF]/30 rounded-xl px-4 py-2 text-center shadow-xs">
-                  <span id="displayPairingCodeFormatted" class="font-mono text-xl sm:text-2xl font-black text-[#0057FF] tracking-wider select-all">----------</span>
+                <div class="flex-1 bg-white border-2 border-[#0057FF]/30 rounded-xl px-3 sm:px-4 py-2 text-center shadow-xs overflow-hidden">
+                  <span id="displayPairingCodeFormatted" class="font-mono text-lg sm:text-xl md:text-2xl font-black text-[#0057FF] tracking-wider select-all break-all">----------</span>
                 </div>
-                <button type="button" onclick="copyPairingCode()" id="copyCodeBtn" class="bg-[#0057FF] hover:bg-[#004AD9] text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer">
+                <button type="button" onclick="copyPairingCode()" id="copyCodeBtn" class="bg-[#0057FF] hover:bg-[#004AD9] text-white px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer">
                   <i class="fa-regular fa-copy"></i>
                   <span id="copyCodeBtnText">Copy</span>
                 </button>
@@ -554,9 +584,9 @@
 
           <!-- QR Code Display (5 cols) -->
           <div class="md:col-span-5 flex flex-col items-center justify-center">
-            <div class="bg-white p-4 rounded-2xl border border-[#E5E9F0] shadow-sm relative min-w-[210px] min-h-[210px] flex items-center justify-center">
+            <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-[#E5E9F0] shadow-sm relative min-w-[190px] min-h-[190px] sm:min-w-[210px] sm:min-h-[210px] flex items-center justify-center">
               <div class="absolute inset-x-4 top-4 h-0.5 bg-gradient-to-r from-transparent via-[#0057FF] to-transparent laser-line pointer-events-none z-10"></div>
-              <div id="qrcode" class="w-[180px] h-[180px] flex items-center justify-center"></div>
+              <div id="qrcode" class="w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] flex items-center justify-center"></div>
             </div>
 
             <div class="mt-4 text-center">
@@ -582,39 +612,59 @@
     <!-- =================================================================== -->
     <!-- VIEW C: AUTHENTICATED DASHBOARD (Sidebar + Main Workspace)          -->
     <!-- =================================================================== -->
-    <div id="viewDashboardWrapper" class="hidden flex-1 flex overflow-hidden w-full">
+    <div id="viewDashboardWrapper" class="hidden flex-1 flex overflow-hidden w-full relative">
       
-      <!-- Left Sidebar Navigation -->
-      <aside class="w-64 bg-white border-r border-[#E5E9F0] flex flex-col justify-between p-4 overflow-y-auto shrink-0 select-none">
+      <!-- Mobile Drawer Backdrop Overlay -->
+      <div id="sidebarBackdrop" onclick="closeMobileSidebar()" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 lg:hidden hidden transition-opacity duration-300"></div>
+
+      <!-- Left Sidebar Navigation (Off-canvas drawer on mobile, static on lg) -->
+      <aside id="mainSidebar" class="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white border-r border-[#E5E9F0] flex flex-col justify-between p-4 overflow-y-auto shrink-0 select-none transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none">
+        
+        <!-- Mobile Drawer Header with Close Button -->
+        <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0] lg:hidden mb-2">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-xl bg-[#0057FF] flex items-center justify-center text-white shadow-xs">
+              <i class="fa-solid fa-comment-sms text-sm"></i>
+            </div>
+            <div>
+              <span class="font-extrabold text-sm text-[#111827] block leading-tight">Simple SMS</span>
+              <span class="text-[10px] text-[#6B7280]">Navigation Menu</span>
+            </div>
+          </div>
+          <button onclick="closeMobileSidebar()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-[#6B7280] flex items-center justify-center transition" title="Close Menu">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+
         <div class="space-y-6">
 
           <!-- Category 1: Main Workspaces -->
           <nav class="space-y-1">
-            <a href="#dashboard" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-bold text-xs bg-[#EBF3FF] text-[#0057FF] transition">
+            <a href="#dashboard" onclick="closeMobileSidebar();" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-bold text-xs bg-[#EBF3FF] text-[#0057FF] transition">
               <i class="fa-solid fa-gauge-high w-4 text-sm"></i>
               <span>Dashboard</span>
             </a>
-            <a href="javascript:void(0)" onclick="focusMessageComposer()" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="javascript:void(0)" onclick="closeMobileSidebar(); focusMessageComposer();" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-paper-plane w-4 text-sm text-[#6B7280]"></i>
               <span>Send SMS</span>
             </a>
-            <a href="javascript:void(0)" onclick="openContactsModal()" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="javascript:void(0)" onclick="closeMobileSidebar(); openContactsModal();" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-user-group w-4 text-sm text-[#6B7280]"></i>
               <span>Contacts</span>
             </a>
-            <a href="javascript:void(0)" onclick="openTemplatesModal()" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="javascript:void(0)" onclick="closeMobileSidebar(); openTemplatesModal();" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-file-lines w-4 text-sm text-[#6B7280]"></i>
               <span>Templates</span>
             </a>
-            <a href="javascript:void(0)" onclick="openBroadcastModal()" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="javascript:void(0)" onclick="closeMobileSidebar(); openBroadcastModal();" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-bullhorn w-4 text-sm text-[#6B7280]"></i>
               <span>Broadcast</span>
             </a>
-            <a href="javascript:void(0)" onclick="openScheduleModal()" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="javascript:void(0)" onclick="closeMobileSidebar(); openScheduleModal();" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-calendar-days w-4 text-sm text-[#6B7280]"></i>
               <span>Scheduled</span>
             </a>
-            <a href="javascript:void(0)" onclick="openMessageHistoryModal()" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="javascript:void(0)" onclick="closeMobileSidebar(); openMessageHistoryModal();" class="flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-clock-rotate-left w-4 text-sm text-[#6B7280]"></i>
               <span>Message History</span>
             </a>
@@ -623,19 +673,19 @@
           <!-- Category 2: DEVICE & CONNECTION -->
           <div class="space-y-1">
             <p class="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF] px-3.5 mb-2">Device & Connection</p>
-            <a href="javascript:void(0)" onclick="openDeviceStatusModal()" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="javascript:void(0)" onclick="closeMobileSidebar(); openDeviceStatusModal();" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-mobile-screen-button w-4 text-sm text-[#6B7280]"></i>
               <span>Device Status</span>
             </a>
-            <a href="javascript:void(0)" onclick="openDeviceStatusModal()" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="javascript:void(0)" onclick="closeMobileSidebar(); openDeviceStatusModal();" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-sim-card w-4 text-sm text-[#6B7280]"></i>
               <span>SIM Management</span>
             </a>
-            <a href="javascript:void(0)" onclick="openDeviceStatusModal()" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="javascript:void(0)" onclick="closeMobileSidebar(); openDeviceStatusModal();" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-link w-4 text-sm text-[#6B7280]"></i>
               <span>Connection Settings</span>
             </a>
-            <a href="#connect" onclick="navigateTo('connect'); return false;" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="#connect" onclick="closeMobileSidebar(); navigateTo('connect'); return false;" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-desktop w-4 text-sm text-[#6B7280]"></i>
               <span>Web Remote Gateway</span>
             </a>
@@ -644,11 +694,11 @@
           <!-- Category 3: TOOLS & INSIGHTS -->
           <div class="space-y-1">
             <p class="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF] px-3.5 mb-2">Tools & Insights</p>
-            <a href="javascript:void(0)" onclick="openDeliveryReportsModal()" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="javascript:void(0)" onclick="closeMobileSidebar(); openDeliveryReportsModal();" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-chart-simple w-4 text-sm text-[#6B7280]"></i>
               <span>Delivery Reports</span>
             </a>
-            <a href="javascript:void(0)" onclick="openDeliveryReportsModal()" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="javascript:void(0)" onclick="closeMobileSidebar(); openDeliveryReportsModal();" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-chart-pie w-4 text-sm text-[#6B7280]"></i>
               <span>Analytics</span>
             </a>
@@ -657,11 +707,11 @@
           <!-- Category 4: SETTINGS -->
           <div class="space-y-1">
             <p class="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF] px-3.5 mb-2">Settings</p>
-            <a href="javascript:void(0)" onclick="openDeviceStatusModal()" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="javascript:void(0)" onclick="closeMobileSidebar(); openDeviceStatusModal();" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-solid fa-gear w-4 text-sm text-[#6B7280]"></i>
               <span>App Settings</span>
             </a>
-            <a href="#home" onclick="navigateTo('home'); return false;" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
+            <a href="#home" onclick="closeMobileSidebar(); navigateTo('home'); return false;" class="flex items-center space-x-3 px-3.5 py-2 rounded-xl font-medium text-xs text-[#4B5563] hover:text-[#111827] hover:bg-slate-100 transition">
               <i class="fa-regular fa-circle-question w-4 text-sm text-[#6B7280]"></i>
               <span>Help & Support</span>
             </a>
@@ -678,68 +728,68 @@
           <p class="text-[11px] text-[#6B7280] mt-1 leading-snug">
             Unlock advanced features like scheduled SMS, contact groups, and more.
           </p>
-          <button onclick="openProModal()" class="mt-3 w-full bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs py-2 px-3 rounded-lg shadow-xs transition">
+          <button onclick="closeMobileSidebar(); openProModal();" class="mt-3 w-full bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs py-2 px-3 rounded-lg shadow-xs transition">
             Upgrade Now
           </button>
         </div>
       </aside>
 
       <!-- Main Dashboard Content -->
-      <main class="flex-1 overflow-y-auto p-5 lg:p-7 space-y-6 max-w-[1550px] mx-auto">
+      <main class="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-7 pb-24 lg:pb-6 space-y-4 sm:space-y-6 max-w-[1550px] mx-auto">
         
         <!-- Top Wide Hero Banner Card -->
-        <section class="hero-gradient rounded-3xl border border-[#DBEAFE] p-6 lg:p-8 relative overflow-hidden shadow-xs">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
-            <div class="lg:col-span-7 space-y-4">
+        <section class="hero-gradient rounded-2xl sm:rounded-3xl border border-[#DBEAFE] p-4 sm:p-6 lg:p-8 relative overflow-hidden shadow-xs">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-center relative z-10">
+            <div class="lg:col-span-7 space-y-3 sm:space-y-4">
               <div>
                 <span class="text-[11px] font-black tracking-wider text-[#0057FF] uppercase">WELCOME BACK,</span>
-                <h2 class="text-2xl lg:text-3xl font-black text-[#111827] tracking-tight mt-1">
+                <h2 class="text-xl sm:text-2xl lg:text-3xl font-black text-[#111827] tracking-tight mt-1">
                   Send SMS from your computer
                 </h2>
-                <p class="text-xs lg:text-sm text-[#4B5563] mt-1">
+                <p class="text-xs sm:text-sm text-[#4B5563] mt-1">
                   Your Android phone's SIM card. More control. More productivity.
                 </p>
               </div>
 
               <!-- 4 Feature Pills -->
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                <div class="flex items-center space-x-2.5">
-                  <div class="w-8 h-8 rounded-full bg-[#16A36A] text-white flex items-center justify-center shrink-0 shadow-xs">
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 pt-2">
+                <div class="flex items-center space-x-2 sm:space-x-2.5">
+                  <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#16A36A] text-white flex items-center justify-center shrink-0 shadow-xs">
                     <i class="fa-solid fa-bolt text-xs"></i>
                   </div>
                   <div>
                     <h5 class="text-xs font-bold text-[#111827]">Fast & Reliable</h5>
-                    <p class="text-[10px] text-[#6B7280]">Uses your phone's SIM</p>
+                    <p class="text-[10px] text-[#6B7280]">Uses phone's SIM</p>
                   </div>
                 </div>
 
-                <div class="flex items-center space-x-2.5">
-                  <div class="w-8 h-8 rounded-full bg-[#6558F5] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <div class="flex items-center space-x-2 sm:space-x-2.5">
+                  <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#6558F5] text-white flex items-center justify-center shrink-0 shadow-xs">
                     <i class="fa-solid fa-shield-halved text-xs"></i>
                   </div>
                   <div>
-                    <h5 class="text-xs font-bold text-[#111827]">Secure Connection</h5>
+                    <h5 class="text-xs font-bold text-[#111827]">Secure</h5>
                     <p class="text-[10px] text-[#6B7280]">End-to-end encrypted</p>
                   </div>
                 </div>
 
-                <div class="flex items-center space-x-2.5">
-                  <div class="w-8 h-8 rounded-full bg-[#EA580C] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <div class="flex items-center space-x-2 sm:space-x-2.5">
+                  <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#EA580C] text-white flex items-center justify-center shrink-0 shadow-xs">
                     <i class="fa-solid fa-mobile-screen text-xs"></i>
                   </div>
                   <div>
-                    <h5 class="text-xs font-bold text-[#111827]">Real-time Sync</h5>
+                    <h5 class="text-xs font-bold text-[#111827]">Real-time</h5>
                     <p class="text-[10px] text-[#6B7280]">Live delivery status</p>
                   </div>
                 </div>
 
-                <div class="flex items-center space-x-2.5">
-                  <div class="w-8 h-8 rounded-full bg-[#0284C7] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <div class="flex items-center space-x-2 sm:space-x-2.5">
+                  <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#0284C7] text-white flex items-center justify-center shrink-0 shadow-xs">
                     <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
                   </div>
                   <div>
-                    <h5 class="text-xs font-bold text-[#111827]">Powerful Tools</h5>
-                    <p class="text-[10px] text-[#6B7280]">Templates, scheduling & more</p>
+                    <h5 class="text-xs font-bold text-[#111827]">Smart Tools</h5>
+                    <p class="text-[10px] text-[#6B7280]">Templates & schedule</p>
                   </div>
                 </div>
               </div>
@@ -747,7 +797,7 @@
 
             <!-- Right Vector Poster Artwork (Laptop + Phone + Wi-Fi waves) -->
             <div class="lg:col-span-5 flex items-center justify-center lg:justify-end">
-              <svg class="w-full max-w-[360px] h-auto drop-shadow-md select-none" viewBox="0 0 380 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg class="w-full max-w-[260px] sm:max-w-[320px] lg:max-w-[360px] h-auto drop-shadow-md select-none mx-auto" viewBox="0 0 380 180" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <ellipse cx="190" cy="165" rx="160" ry="10" fill="#0057FF" fill-opacity="0.08" />
                 
                 <!-- Laptop -->
@@ -791,19 +841,19 @@
         </section>
 
         <!-- Middle 3 Status Cards (Real data from paired phone) -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
           
           <!-- Card 1: Real Device Info -->
-          <div class="bg-white border border-[#E5E9F0] rounded-2xl p-4 shadow-xs flex items-center space-x-4">
+          <div class="bg-white border border-[#E5E9F0] rounded-2xl p-4 shadow-xs flex items-center space-x-3.5 sm:space-x-4">
             <!-- Realistic Phone Graphic -->
-            <div class="w-16 h-28 bg-[#111827] rounded-xl p-1 shrink-0 relative shadow-sm border border-[#374151]">
+            <div class="w-14 h-24 sm:w-16 sm:h-28 bg-[#111827] rounded-xl p-1 shrink-0 relative shadow-sm border border-[#374151]">
               <div class="w-full h-full rounded-lg overflow-hidden relative flex flex-col justify-between" style="background: linear-gradient(135deg, #4F46E5 0%, #EC4899 50%, #06B6D4 100%);">
                 <div class="flex justify-center pt-0.5"><div class="w-2.5 h-1 bg-[#111827] rounded-full"></div></div>
                 <div class="flex items-center justify-between px-1 text-[6px] text-white font-mono opacity-80">
                   <span id="screenMiniTime">12:00</span>
                   <span>SIM</span>
                 </div>
-                <div class="flex justify-center items-center py-2"><i class="fa-solid fa-comment-sms text-white/70 text-xs"></i></div>
+                <div class="flex justify-center items-center py-1 sm:py-2"><i class="fa-solid fa-comment-sms text-white/70 text-xs"></i></div>
                 <div class="flex justify-center pb-0.5"><div class="w-4 h-0.5 bg-white/60 rounded-full"></div></div>
               </div>
             </div>
@@ -811,23 +861,23 @@
             <!-- Phone Telemetry -->
             <div class="flex-1 min-w-0 space-y-1">
               <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-1.5 sm:space-x-2 min-w-0">
                   <h4 class="font-extrabold text-sm text-[#111827] truncate" id="dashDeviceModel">Loading...</h4>
-                  <span class="bg-[#F0FDF4] text-[#16A36A] border border-[#BBF7D0] text-[10px] font-bold px-2 py-0.5 rounded-full" id="dashDeviceStatusBadge">Online</span>
+                  <span class="bg-[#F0FDF4] text-[#16A36A] border border-[#BBF7D0] text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full shrink-0" id="dashDeviceStatusBadge">Online</span>
                 </div>
-                <button onclick="openDeviceStatusModal()" class="text-[#9CA3AF] hover:text-[#111827] transition" title="Device Details">
+                <button onclick="openDeviceStatusModal()" class="text-[#9CA3AF] hover:text-[#111827] transition shrink-0 ml-1" title="Device Details">
                   <i class="fa-solid fa-gear text-xs"></i>
                 </button>
               </div>
 
-              <p class="text-xs text-[#6B7280]" id="dashDeviceOs">Checking OS...</p>
+              <p class="text-xs text-[#6B7280] truncate" id="dashDeviceOs">Checking OS...</p>
 
-              <div class="pt-1 flex items-center space-x-1.5 flex-wrap">
+              <div class="pt-0.5 flex items-center space-x-1.5 flex-wrap">
                 <span class="text-xs font-bold text-[#111827]" id="dashSimTag">Cellular SIM</span>
                 <span class="bg-[#EFF6FF] text-[#0057FF] text-[10px] font-bold px-1.5 py-0.2 rounded" id="dashSimStateBadge">Active</span>
               </div>
 
-              <p class="text-[11px] text-[#6B7280] font-mono" id="dashPhoneNum">SIM Phone Number</p>
+              <p class="text-[11px] text-[#6B7280] font-mono truncate" id="dashPhoneNum">SIM Phone Number</p>
 
               <div class="flex items-center space-x-2 pt-0.5 text-xs text-[#6B7280]">
                 <span>Battery</span>
@@ -840,8 +890,8 @@
           </div>
 
           <!-- Card 2: Connection Status -->
-          <div class="bg-white border border-[#E5E9F0] rounded-2xl p-5 shadow-xs flex items-center space-x-4">
-            <div class="w-12 h-12 rounded-2xl bg-[#F0FDF4] text-[#16A36A] flex items-center justify-center text-lg shrink-0 border border-[#DCFCE7]">
+          <div class="bg-white border border-[#E5E9F0] rounded-2xl p-4 sm:p-5 shadow-xs flex items-center space-x-3.5 sm:space-x-4">
+            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#F0FDF4] text-[#16A36A] flex items-center justify-center text-base sm:text-lg shrink-0 border border-[#DCFCE7]">
               <i class="fa-solid fa-wifi"></i>
             </div>
             <div>
@@ -854,8 +904,8 @@
           </div>
 
           <!-- Card 3: Transmission Mode -->
-          <div class="bg-white border border-[#E5E9F0] rounded-2xl p-5 shadow-xs flex items-center space-x-4">
-            <div class="w-12 h-12 rounded-2xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-lg shrink-0 border border-[#DBEAFE]">
+          <div class="bg-white border border-[#E5E9F0] rounded-2xl p-4 sm:p-5 shadow-xs flex items-center space-x-3.5 sm:space-x-4 sm:col-span-2 lg:col-span-1">
+            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-base sm:text-lg shrink-0 border border-[#DBEAFE]">
               <i class="fa-solid fa-tower-broadcast"></i>
             </div>
             <div>
@@ -868,27 +918,27 @@
         </section>
 
         <!-- Bottom Split: Compose SMS & Right Widgets -->
-        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
           
           <!-- LEFT 8 COLS: Compose SMS Workspace Card -->
-          <div class="lg:col-span-8 bg-white border border-[#E5E9F0] rounded-3xl p-6 shadow-xs space-y-5">
+          <div class="lg:col-span-8 bg-white border border-[#E5E9F0] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xs space-y-4 sm:space-y-5">
             
-            <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#E5E9F0] gap-2.5">
               <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-base shadow-xs">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm sm:text-base shadow-xs shrink-0">
                   <i class="fa-solid fa-paper-plane -rotate-12"></i>
                 </div>
                 <h3 class="font-extrabold text-base text-[#111827]">Compose SMS</h3>
               </div>
 
-              <div class="flex items-center space-x-2">
-                <button onclick="clearComposer()" class="text-xs font-bold px-3 py-1.5 rounded-lg text-[#E5484D] bg-[#FFF0F0] hover:bg-[#FFE5E5] border border-[#FCA5A5]/30 transition">
+              <div class="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto no-scrollbar py-0.5">
+                <button onclick="clearComposer()" class="text-[11px] sm:text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-lg text-[#E5484D] bg-[#FFF0F0] hover:bg-[#FFE5E5] border border-[#FCA5A5]/30 transition shrink-0">
                   <i class="fa-regular fa-trash-can mr-1"></i> Clear All
                 </button>
-                <button onclick="saveCurrentAsTemplate()" class="text-xs font-bold px-3 py-1.5 rounded-lg text-[#0057FF] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] transition">
+                <button onclick="saveCurrentAsTemplate()" class="text-[11px] sm:text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-lg text-[#0057FF] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] transition shrink-0">
                   <i class="fa-regular fa-bookmark mr-1"></i> Save as Template
                 </button>
-                <button onclick="openScheduleModal()" class="text-xs font-bold px-3 py-1.5 rounded-lg text-[#0057FF] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] transition">
+                <button onclick="openScheduleModal()" class="text-[11px] sm:text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-lg text-[#0057FF] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] transition shrink-0">
                   <i class="fa-regular fa-calendar mr-1"></i> Schedule
                 </button>
               </div>
@@ -897,14 +947,14 @@
             <!-- Recipients -->
             <div class="space-y-2">
               <label class="block text-xs font-bold text-[#111827]">Recipients</label>
-              <div class="flex items-center space-x-2">
-                <button id="btnRecipMode_numbers" onclick="setRecipientMode('numbers')" class="px-3.5 py-1.5 rounded-lg font-bold text-xs bg-[#0057FF] text-white shadow-xs transition">
+              <div class="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto no-scrollbar pb-1">
+                <button id="btnRecipMode_numbers" onclick="setRecipientMode('numbers')" class="px-3 sm:px-3.5 py-1.5 rounded-lg font-bold text-xs bg-[#0057FF] text-white shadow-xs transition shrink-0">
                   <i class="fa-solid fa-phone mr-1.5 text-[10px]"></i> Enter Numbers
                 </button>
-                <button onclick="openContactsModal()" class="px-3.5 py-1.5 rounded-lg font-medium text-xs bg-white text-[#4B5563] border border-[#E5E9F0] hover:bg-slate-50 transition">
-                  <i class="fa-solid fa-user-group mr-1.5 text-[10px]"></i> Select from Contacts
+                <button onclick="openContactsModal()" class="px-3 sm:px-3.5 py-1.5 rounded-lg font-medium text-xs bg-white text-[#4B5563] border border-[#E5E9F0] hover:bg-slate-50 transition shrink-0">
+                  <i class="fa-solid fa-user-group mr-1.5 text-[10px]"></i> Select Contacts
                 </button>
-                <button onclick="openBroadcastModal()" class="px-3.5 py-1.5 rounded-lg font-medium text-xs bg-white text-[#4B5563] border border-[#E5E9F0] hover:bg-slate-50 transition">
+                <button onclick="openBroadcastModal()" class="px-3 sm:px-3.5 py-1.5 rounded-lg font-medium text-xs bg-white text-[#4B5563] border border-[#E5E9F0] hover:bg-slate-50 transition shrink-0">
                   <i class="fa-solid fa-users mr-1.5 text-[10px]"></i> Select Group
                 </button>
               </div>
@@ -912,9 +962,10 @@
               <div class="relative flex items-center">
                 <i class="fa-solid fa-phone absolute left-3.5 text-xs text-[#9CA3AF]"></i>
                 <input type="text" id="recipientInput" placeholder="Enter phone numbers separated by commas..."
-                  class="w-full bg-[#FAFAFA] border border-[#E5E9F0] rounded-xl pl-9 pr-36 py-2.5 text-xs font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#0057FF] focus:border-transparent transition">
-                <button onclick="openContactsModal()" class="absolute right-2 px-2.5 py-1 rounded-lg text-xs font-bold text-[#0057FF] hover:bg-[#EFF6FF] transition flex items-center gap-1.5">
-                  <i class="fa-solid fa-user-plus text-[10px]"></i> Add from Contacts
+                  class="w-full bg-[#FAFAFA] border border-[#E5E9F0] rounded-xl pl-9 pr-24 sm:pr-36 py-2.5 text-xs font-mono text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#0057FF] focus:border-transparent transition">
+                <button onclick="openContactsModal()" class="absolute right-2 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-bold text-[#0057FF] hover:bg-[#EFF6FF] transition flex items-center gap-1">
+                  <i class="fa-solid fa-user-plus text-[10px]"></i>
+                  <span class="hidden sm:inline">Add from </span>Contacts
                 </button>
               </div>
               <p class="text-[11px] text-[#6B7280]">Include country code for international numbers. Example: +91 9876543210, +1 555 123 4567</p>
@@ -988,12 +1039,12 @@
                   <span>|</span>
                   <span id="smsPartBadge" class="bg-[#F0FDF4] text-[#16A36A] border border-[#BBF7D0] font-bold text-[10px] px-2 py-0.5 rounded">1 SMS (GSM-7)</span>
                 </div>
-                <div>Standard GSM-7: 160 characters</div>
+                <div class="hidden sm:block">Standard GSM-7: 160 characters</div>
               </div>
             </div>
 
             <!-- Bottom Actions -->
-            <div class="flex items-center justify-between pt-3 border-t border-[#E5E9F0]">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-3 border-t border-[#E5E9F0] gap-3">
               <div class="flex items-center space-x-2">
                 <button onclick="alert('MMS attachments require MMS APN subscription on cellular SIM.')" class="w-9 h-9 rounded-xl border border-[#E5E9F0] bg-white hover:bg-slate-50 text-[#6B7280] hover:text-[#111827] flex items-center justify-center transition" title="Attach file">
                   <i class="fa-solid fa-paperclip text-sm"></i>
@@ -1004,8 +1055,8 @@
               </div>
 
               <!-- Send Button -->
-              <div class="flex items-center relative">
-                <button id="sendBtn" onclick="dispatchRealSms()" class="bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs py-2.5 px-5 rounded-l-xl flex items-center space-x-2 shadow-xs transition">
+              <div class="flex items-center relative w-full sm:w-auto">
+                <button id="sendBtn" onclick="dispatchRealSms()" class="flex-1 sm:flex-initial bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs py-2.5 px-4 sm:px-5 rounded-l-xl flex items-center justify-center space-x-2 shadow-xs transition">
                   <i class="fa-solid fa-paper-plane text-xs"></i>
                   <span>Send SMS via Phone SIM</span>
                 </button>
@@ -1030,53 +1081,53 @@
           </div>
 
           <!-- RIGHT 4 COLS: Real Activity Stats, Live Queue Stream & Quick Actions -->
-          <div class="lg:col-span-4 space-y-6">
+          <div class="lg:col-span-4 space-y-5 sm:space-y-6">
             
             <!-- Real Today's Activity Stats -->
-            <div class="bg-white border border-[#E5E9F0] rounded-3xl p-5 shadow-xs space-y-4">
+            <div class="bg-white border border-[#E5E9F0] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-4">
               <div class="flex items-center justify-between">
                 <h4 class="font-extrabold text-sm text-[#111827]">Today's Activity</h4>
                 <a href="javascript:void(0)" onclick="openDeliveryReportsModal()" class="text-xs font-bold text-[#0057FF] hover:underline">View All</a>
               </div>
 
               <!-- 2x2 Real Counters Grid -->
-              <div class="grid grid-cols-2 gap-3">
-                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3.5 space-y-1">
+              <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3 sm:p-3.5 space-y-1">
                   <div class="w-7 h-7 rounded-full bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-xs">
                     <i class="fa-solid fa-paper-plane"></i>
                   </div>
-                  <div class="text-2xl font-black text-[#111827]" id="statSent">0</div>
+                  <div class="text-xl sm:text-2xl font-black text-[#111827]" id="statSent">0</div>
                   <p class="text-[11px] font-bold text-[#4B5563]">SMS Sent</p>
                 </div>
 
-                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3.5 space-y-1">
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3 sm:p-3.5 space-y-1">
                   <div class="w-7 h-7 rounded-full bg-[#F0FDF4] text-[#16A36A] flex items-center justify-center text-xs">
                     <i class="fa-solid fa-check"></i>
                   </div>
-                  <div class="text-2xl font-black text-[#111827]" id="statDelivered">0</div>
+                  <div class="text-xl sm:text-2xl font-black text-[#111827]" id="statDelivered">0</div>
                   <p class="text-[11px] font-bold text-[#4B5563]">Delivered</p>
                 </div>
 
-                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3.5 space-y-1">
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3 sm:p-3.5 space-y-1">
                   <div class="w-7 h-7 rounded-full bg-[#FFFBEB] text-[#D97706] flex items-center justify-center text-xs">
                     <i class="fa-regular fa-clock"></i>
                   </div>
-                  <div class="text-2xl font-black text-[#111827]" id="statPending">0</div>
+                  <div class="text-xl sm:text-2xl font-black text-[#111827]" id="statPending">0</div>
                   <p class="text-[11px] font-bold text-[#4B5563]">Pending</p>
                 </div>
 
-                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3.5 space-y-1">
+                <div class="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-3 sm:p-3.5 space-y-1">
                   <div class="w-7 h-7 rounded-full bg-[#FFF0F0] text-[#E5484D] flex items-center justify-center text-xs">
                     <i class="fa-solid fa-xmark"></i>
                   </div>
-                  <div class="text-2xl font-black text-[#111827]" id="statFailed">0</div>
+                  <div class="text-xl sm:text-2xl font-black text-[#111827]" id="statFailed">0</div>
                   <p class="text-[11px] font-bold text-[#4B5563]">Failed</p>
                 </div>
               </div>
             </div>
 
             <!-- Realtime Transmission Stream (Connected to Phone Firestore queue) -->
-            <div class="bg-white border border-[#E5E9F0] rounded-3xl p-5 shadow-xs space-y-3">
+            <div class="bg-white border border-[#E5E9F0] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-3">
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2">
                   <i class="fa-solid fa-tower-broadcast text-[#0057FF] text-xs"></i>
@@ -1100,38 +1151,38 @@
             </div>
 
             <!-- Quick Actions -->
-            <div class="bg-white border border-[#E5E9F0] rounded-3xl p-5 shadow-xs space-y-3">
+            <div class="bg-white border border-[#E5E9F0] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-3">
               <h4 class="font-extrabold text-sm text-[#111827]">Quick Actions</h4>
-              <div class="grid grid-cols-3 gap-2.5">
-                <button onclick="openContactsModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
+              <div class="grid grid-cols-3 gap-2 sm:gap-2.5">
+                <button onclick="openContactsModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
                   <div class="w-8 h-8 rounded-xl bg-[#F0FDF4] text-[#16A36A] flex items-center justify-center text-sm group-hover:scale-110 transition"><i class="fa-solid fa-user-group"></i></div>
                   <span class="text-xs font-bold text-[#111827]">Contacts</span>
-                  <span class="text-[9px] text-[#6B7280]">Manage contacts</span>
+                  <span class="text-[9px] text-[#6B7280]">Manage</span>
                 </button>
-                <button onclick="openTemplatesModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
+                <button onclick="openTemplatesModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
                   <div class="w-8 h-8 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm group-hover:scale-110 transition"><i class="fa-solid fa-file-lines"></i></div>
                   <span class="text-xs font-bold text-[#111827]">Templates</span>
-                  <span class="text-[9px] text-[#6B7280]">Create templates</span>
+                  <span class="text-[9px] text-[#6B7280]">Saved</span>
                 </button>
-                <button onclick="openScheduleModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
+                <button onclick="openScheduleModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
                   <div class="w-8 h-8 rounded-xl bg-[#FAF5FF] text-[#9333EA] flex items-center justify-center text-sm group-hover:scale-110 transition"><i class="fa-solid fa-calendar-days"></i></div>
-                  <span class="text-xs font-bold text-[#111827]">Schedule SMS</span>
-                  <span class="text-[9px] text-[#6B7280]">Set date & time</span>
+                  <span class="text-xs font-bold text-[#111827]">Schedule</span>
+                  <span class="text-[9px] text-[#6B7280]">Date/time</span>
                 </button>
-                <button onclick="openDeliveryReportsModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
+                <button onclick="openDeliveryReportsModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
                   <div class="w-8 h-8 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm group-hover:scale-110 transition"><i class="fa-solid fa-chart-simple"></i></div>
                   <span class="text-xs font-bold text-[#111827]">Reports</span>
-                  <span class="text-[9px] text-[#6B7280]">View logs</span>
+                  <span class="text-[9px] text-[#6B7280]">Logs</span>
                 </button>
-                <button onclick="openDeviceStatusModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
+                <button onclick="openDeviceStatusModal()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
                   <div class="w-8 h-8 rounded-xl bg-[#F1F5F9] text-[#475569] flex items-center justify-center text-sm group-hover:scale-110 transition"><i class="fa-solid fa-gear"></i></div>
                   <span class="text-xs font-bold text-[#111827]">Settings</span>
-                  <span class="text-[9px] text-[#6B7280]">SIM & battery</span>
+                  <span class="text-[9px] text-[#6B7280]">Hardware</span>
                 </button>
-                <button onclick="exportDispatchHistoryCsv()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
+                <button onclick="exportDispatchHistoryCsv()" class="bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center space-y-1 transition group">
                   <div class="w-8 h-8 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm group-hover:scale-110 transition"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
-                  <span class="text-xs font-bold text-[#111827]">Export Data</span>
-                  <span class="text-[9px] text-[#6B7280]">Download CSV</span>
+                  <span class="text-xs font-bold text-[#111827]">Export</span>
+                  <span class="text-[9px] text-[#6B7280]">CSV</span>
                 </button>
               </div>
             </div>
@@ -1144,6 +1195,30 @@
 
     </div>
 
+    <!-- Mobile Fixed Bottom Navigation Bar (Visible on mobile only when dashboard is active) -->
+    <nav id="mobileBottomNav" class="hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#E5E9F0] lg:hidden flex items-center justify-around py-1.5 px-1 shadow-float select-none">
+      <button onclick="closeMobileSidebar(); window.scrollTo({top:0, behavior:'smooth'});" class="flex flex-col items-center justify-center flex-1 py-1 text-[#0057FF]">
+        <i class="fa-solid fa-gauge-high text-base"></i>
+        <span class="text-[10px] font-bold mt-0.5">Home</span>
+      </button>
+      <button onclick="closeMobileSidebar(); focusMessageComposer();" class="flex flex-col items-center justify-center flex-1 py-1 text-[#6B7280] hover:text-[#0057FF]">
+        <i class="fa-solid fa-paper-plane text-base"></i>
+        <span class="text-[10px] font-semibold mt-0.5">Send</span>
+      </button>
+      <button onclick="closeMobileSidebar(); openContactsModal();" class="flex flex-col items-center justify-center flex-1 py-1 text-[#6B7280] hover:text-[#0057FF]">
+        <i class="fa-solid fa-user-group text-base"></i>
+        <span class="text-[10px] font-semibold mt-0.5">Contacts</span>
+      </button>
+      <button onclick="closeMobileSidebar(); openMessageHistoryModal();" class="flex flex-col items-center justify-center flex-1 py-1 text-[#6B7280] hover:text-[#0057FF]">
+        <i class="fa-solid fa-clock-rotate-left text-base"></i>
+        <span class="text-[10px] font-semibold mt-0.5">History</span>
+      </button>
+      <button onclick="toggleMobileSidebar();" class="flex flex-col items-center justify-center flex-1 py-1 text-[#6B7280] hover:text-[#0057FF]">
+        <i class="fa-solid fa-bars text-base"></i>
+        <span class="text-[10px] font-semibold mt-0.5">Menu</span>
+      </button>
+    </nav>
+
   </div>
 
   <!-- ===================================================================== -->
@@ -1151,8 +1226,8 @@
   <!-- ===================================================================== -->
 
   <!-- Modal: Real Device Telemetry & SIM Status -->
-  <div id="modalDeviceStatus" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl border border-[#E5E9F0]">
+  <div id="modalDeviceStatus" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-4 sm:space-y-5 shadow-2xl border border-[#E5E9F0] max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
         <div class="flex items-center space-x-2.5">
           <div class="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm">
@@ -1210,8 +1285,8 @@
   </div>
 
   <!-- Modal: Contacts Manager -->
-  <div id="modalContacts" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0]">
+  <div id="modalContacts" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-[#E5E9F0] max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
         <div class="flex items-center space-x-2.5">
           <div class="w-9 h-9 rounded-xl bg-[#F0FDF4] text-[#16A36A] flex items-center justify-center text-sm">
@@ -1246,8 +1321,8 @@
   </div>
 
   <!-- Modal: Templates Manager -->
-  <div id="modalTemplates" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0]">
+  <div id="modalTemplates" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-[#E5E9F0] max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
         <div class="flex items-center space-x-2.5">
           <div class="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm">
@@ -1274,8 +1349,8 @@
   </div>
 
   <!-- Modal: Schedule SMS -->
-  <div id="modalSchedule" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0]">
+  <div id="modalSchedule" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-[#E5E9F0] max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
         <div class="flex items-center space-x-2.5">
           <div class="w-9 h-9 rounded-xl bg-[#FAF5FF] text-[#9333EA] flex items-center justify-center text-sm">
@@ -1307,8 +1382,8 @@
   </div>
 
   <!-- Modal: Broadcast / Group Dispatch -->
-  <div id="modalBroadcast" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0]">
+  <div id="modalBroadcast" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-[#E5E9F0] max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
         <div class="flex items-center space-x-2.5">
           <div class="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm">
@@ -1334,8 +1409,8 @@
   </div>
 
   <!-- Modal: Delivery Reports & Full History -->
-  <div id="modalDeliveryReports" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-    <div class="bg-white rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0]">
+  <div id="modalDeliveryReports" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-[#E5E9F0] max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
         <div class="flex items-center space-x-2.5">
           <div class="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-sm">
@@ -1350,21 +1425,21 @@
 
       <div class="space-y-3 text-xs">
         <div class="grid grid-cols-4 gap-2 text-center">
-          <div class="bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 rounded-xl">
-            <span class="text-[#6B7280] text-[10px] uppercase font-bold">Sent</span>
-            <p class="text-lg font-black text-[#111827]" id="modalStatSent">0</p>
+          <div class="bg-[#F8FAFC] border border-[#E2E8F0] p-2 sm:p-2.5 rounded-xl">
+            <span class="text-[#6B7280] text-[9px] sm:text-[10px] uppercase font-bold">Sent</span>
+            <p class="text-base sm:text-lg font-black text-[#111827]" id="modalStatSent">0</p>
           </div>
-          <div class="bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 rounded-xl">
-            <span class="text-[#6B7280] text-[10px] uppercase font-bold">Delivered</span>
-            <p class="text-lg font-black text-[#16A36A]" id="modalStatDelivered">0</p>
+          <div class="bg-[#F8FAFC] border border-[#E2E8F0] p-2 sm:p-2.5 rounded-xl">
+            <span class="text-[#6B7280] text-[9px] sm:text-[10px] uppercase font-bold">Delivered</span>
+            <p class="text-base sm:text-lg font-black text-[#16A36A]" id="modalStatDelivered">0</p>
           </div>
-          <div class="bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 rounded-xl">
-            <span class="text-[#6B7280] text-[10px] uppercase font-bold">Pending</span>
-            <p class="text-lg font-black text-[#D97706]" id="modalStatPending">0</p>
+          <div class="bg-[#F8FAFC] border border-[#E2E8F0] p-2 sm:p-2.5 rounded-xl">
+            <span class="text-[#6B7280] text-[9px] sm:text-[10px] uppercase font-bold">Pending</span>
+            <p class="text-base sm:text-lg font-black text-[#D97706]" id="modalStatPending">0</p>
           </div>
-          <div class="bg-[#F8FAFC] border border-[#E2E8F0] p-2.5 rounded-xl">
-            <span class="text-[#6B7280] text-[10px] uppercase font-bold">Failed</span>
-            <p class="text-lg font-black text-[#E5484D]" id="modalStatFailed">0</p>
+          <div class="bg-[#F8FAFC] border border-[#E2E8F0] p-2 sm:p-2.5 rounded-xl">
+            <span class="text-[#6B7280] text-[9px] sm:text-[10px] uppercase font-bold">Failed</span>
+            <p class="text-base sm:text-lg font-black text-[#E5484D]" id="modalStatFailed">0</p>
           </div>
         </div>
 
@@ -1381,9 +1456,9 @@
   </div>
 
   <!-- Modal: How It Works Walkthrough -->
-  <div id="modalHowItWorks" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-7 space-y-6 shadow-2xl border border-[#E5E9F0]">
-      <div class="flex items-center justify-between border-b border-[#E5E9F0] pb-4">
+  <div id="modalHowItWorks" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-7 space-y-5 sm:space-y-6 shadow-2xl border border-[#E5E9F0] max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#E5E9F0] pb-3 sm:pb-4">
         <div class="flex items-center space-x-2.5">
           <div class="w-9 h-9 rounded-xl bg-[#EFF6FF] text-[#0057FF] flex items-center justify-center text-base">
             <i class="fa-regular fa-circle-play"></i>
@@ -1429,8 +1504,8 @@
   </div>
 
   <!-- Modal: Simple SMS Pro -->
-  <div id="modalPro" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0] text-center">
+  <div id="modalPro" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-[#E5E9F0] text-center max-h-[90vh] overflow-y-auto">
       <div class="w-12 h-12 rounded-2xl bg-[#FEF3C7] text-[#D97706] flex items-center justify-center text-xl mx-auto shadow-xs">
         <i class="fa-solid fa-crown"></i>
       </div>
@@ -1445,8 +1520,8 @@
   </div>
 
   <!-- Modal: Firestore Rules Assistant -->
-  <div id="modalRules" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-[#E5E9F0]">
+  <div id="modalRules" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-3 sm:p-4">
+    <div class="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-[#E5E9F0] max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-[#E5E9F0]">
         <div class="flex items-center space-x-2.5">
           <div class="w-9 h-9 rounded-xl bg-[#FFF5DF] text-[#D98A12] flex items-center justify-center text-sm">
@@ -1474,7 +1549,7 @@ service cloud.firestore {
   </div>
 
   <!-- Notification Toast -->
-  <div id="toastNotification" class="hidden fixed bottom-6 right-6 z-50 bg-[#111827] text-white px-4 py-3 rounded-2xl shadow-float text-xs flex items-center space-x-3 transition transform">
+  <div id="toastNotification" class="hidden fixed bottom-20 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6 z-50 bg-[#111827] text-white px-4 py-3 rounded-2xl shadow-float text-xs flex items-center space-x-3 transition transform">
     <div id="toastIcon" class="text-[#16A36A] text-sm"><i class="fa-solid fa-circle-check"></i></div>
     <span id="toastMessage">Notification</span>
   </div>
@@ -1589,6 +1664,8 @@ service cloud.firestore {
       document.getElementById('viewHome').classList.remove('hidden');
       document.getElementById('viewPairing').classList.add('hidden');
       document.getElementById('viewDashboardWrapper').classList.add('hidden');
+      document.getElementById('mobileBottomNav')?.classList.add('hidden');
+      closeMobileSidebar();
       window.scrollTo(0, 0);
     }
 
@@ -1598,6 +1675,8 @@ service cloud.firestore {
       document.getElementById('viewHome').classList.add('hidden');
       document.getElementById('viewPairing').classList.remove('hidden');
       document.getElementById('viewDashboardWrapper').classList.add('hidden');
+      document.getElementById('mobileBottomNav')?.classList.add('hidden');
+      closeMobileSidebar();
 
       // Generate a fresh QR pairing session whenever user visits connect page
       generateNewPairingSession();
@@ -1610,10 +1689,40 @@ service cloud.firestore {
       document.getElementById('viewHome').classList.add('hidden');
       document.getElementById('viewPairing').classList.add('hidden');
       document.getElementById('viewDashboardWrapper').classList.remove('hidden');
+      document.getElementById('mobileBottomNav')?.classList.remove('hidden');
+      closeMobileSidebar();
 
       loadRealDeviceData(boundDeviceId);
       listenToDeviceSync(boundDeviceId);
       window.scrollTo(0, 0);
+    }
+
+    // -------------------------------------------------------------------------
+    // MOBILE DRAWER CONTROLS
+    // -------------------------------------------------------------------------
+    function openMobileSidebar() {
+      const sidebar = document.getElementById('mainSidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (sidebar) sidebar.classList.remove('-translate-x-full');
+      if (backdrop) backdrop.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileSidebar() {
+      const sidebar = document.getElementById('mainSidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (sidebar) sidebar.classList.add('-translate-x-full');
+      if (backdrop) backdrop.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('mainSidebar');
+      if (sidebar && sidebar.classList.contains('-translate-x-full')) {
+        openMobileSidebar();
+      } else {
+        closeMobileSidebar();
+      }
     }
 
     // -------------------------------------------------------------------------
