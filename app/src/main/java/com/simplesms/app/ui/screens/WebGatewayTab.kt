@@ -127,7 +127,7 @@ fun WebGatewayTab(viewModel: MainViewModel) {
     LaunchedEffect(linkedSessionId) {
         if (linkedSessionId != null) {
             currentScreenState = GatewayScreenState.MANAGEMENT
-        } else if (currentScreenState == GatewayScreenState.MANAGEMENT) {
+        } else {
             currentScreenState = GatewayScreenState.LANDING
         }
     }

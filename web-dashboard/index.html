@@ -1755,25 +1755,76 @@ service cloud.firestore {
       // 1. Immediately read from session doc for instantaneous zero-latency display
       if (currentSessionId) {
         db.collection('sessions').doc(currentSessionId).get().then(doc => {
-          if (doc.exists && doc.data().status === 'PAIRED') {
-            applyDeviceDataToUi(doc.data(), deviceId);
+          if (doc.exists) {
+            const sData = doc.data();
+            if (sData.status === 'DISCONNECTED') {
+              handleRemoteUnlinkFromPhone();
+              return;
+            }
+            if (sData.status === 'PAIRED') {
+              applyDeviceDataToUi(sData, deviceId);
+            }
           }
         }).catch(console.warn);
       }
 
-      // 2. Realtime listener on device document
+      // 2. Realtime listener on device document for instant telemetry & disconnect
       if (deviceId) {
         if (deviceDocListener) deviceDocListener();
         const deviceRef = db.collection('devices').doc(deviceId);
 
         deviceDocListener = deviceRef.onSnapshot(doc => {
           if (doc.exists) {
-            applyDeviceDataToUi(doc.data(), deviceId);
+            const data = doc.data();
+            if (data.status === 'DISCONNECTED' || (data.linkedSession === null && data.status !== 'online')) {
+              handleRemoteUnlinkFromPhone();
+              return;
+            }
+            applyDeviceDataToUi(data, deviceId);
           }
         }, err => {
           console.warn("Device document listener error:", err.message);
         });
       }
+
+      // 3. Realtime listener on session document for instant disconnect
+      if (currentSessionId) {
+        if (sessionListener) sessionListener();
+        const sessionRef = db.collection('sessions').doc(currentSessionId);
+        sessionListener = sessionRef.onSnapshot(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+            if (data.status === 'DISCONNECTED') {
+              handleRemoteUnlinkFromPhone();
+              return;
+            }
+          }
+        }, err => {
+          console.warn("Session listener note:", err.message);
+        });
+      }
+    }
+
+    function handleRemoteUnlinkFromPhone() {
+      if (!boundDeviceId && !currentSessionId) return;
+
+      console.log("Remote unlink event detected from Android phone");
+
+      if (sessionListener) { sessionListener(); sessionListener = null; }
+      if (queueListener) { queueListener(); queueListener = null; }
+      if (historyListener) { historyListener(); historyListener = null; }
+      if (contactsListener) { contactsListener(); contactsListener = null; }
+      if (templatesListener) { templatesListener(); templatesListener = null; }
+      if (deviceDocListener) { deviceDocListener(); deviceDocListener = null; }
+
+      localStorage.removeItem('simplesms_bound_device');
+      localStorage.removeItem('simplesms_web_session');
+      boundDeviceId = "";
+      currentSessionId = "";
+
+      closeModal('modalDeviceStatus');
+      showToast("Android phone disconnected the session", "info");
+      navigateTo('connect');
     }
 
     function applyDeviceDataToUi(data, deviceId) {
@@ -1785,6 +1836,7 @@ service cloud.firestore {
       const carrier = data.carrier || data.simCarrier || "Cellular SIM";
       const phoneNumber = data.phoneNumber || "SIM Phone Number";
       const battery = (data.battery !== undefined && data.battery !== null) ? data.battery : (data.batteryLevel || "--");
+      const isCharging = (data.isCharging === true || data.charging === true);
       const isOnline = data.status === 'online' || data.status === 'PAIRED';
 
       // Update Header
@@ -1808,15 +1860,25 @@ service cloud.firestore {
       if (dPhone) dPhone.innerText = phoneNumber;
 
       const dBat = document.getElementById('dashBatteryPct');
-      if (dBat) dBat.innerText = battery + "%";
+      if (dBat) {
+        if (isCharging) {
+          dBat.innerHTML = `${battery}% <span class="text-[10px] font-bold text-[#0057FF] bg-[#EFF6FF] px-1.5 py-0.5 rounded-md border border-[#BFDBFE] inline-flex items-center gap-1"><i class="fa-solid fa-bolt text-[#0057FF]"></i> Charging</span>`;
+        } else {
+          dBat.innerText = battery + "%";
+        }
+      }
 
       // Battery Icon
       const bIcon = document.getElementById('dashBatteryIcon');
-      if (bIcon && typeof battery === 'number') {
-        if (battery > 80) bIcon.className = "fa-solid fa-battery-full text-[#16A36A]";
-        else if (battery > 50) bIcon.className = "fa-solid fa-battery-three-quarters text-[#16A36A]";
-        else if (battery > 20) bIcon.className = "fa-solid fa-battery-half text-[#D98A12]";
-        else bIcon.className = "fa-solid fa-battery-quarter text-[#E5484D]";
+      if (bIcon) {
+        if (isCharging) {
+          bIcon.className = "fa-solid fa-bolt text-[#0057FF] animate-pulse";
+        } else if (typeof battery === 'number') {
+          if (battery > 80) bIcon.className = "fa-solid fa-battery-full text-[#16A36A]";
+          else if (battery > 50) bIcon.className = "fa-solid fa-battery-three-quarters text-[#16A36A]";
+          else if (battery > 20) bIcon.className = "fa-solid fa-battery-half text-[#D98A12]";
+          else bIcon.className = "fa-solid fa-battery-quarter text-[#E5484D]";
+        }
       }
 
       const dBadge = document.getElementById('dashDeviceStatusBadge');
@@ -1841,7 +1903,13 @@ service cloud.firestore {
       if (mPhone) mPhone.innerText = phoneNumber;
 
       const mBat = document.getElementById('modalDetailBattery');
-      if (mBat) mBat.innerHTML = `<i class="fa-solid fa-battery-three-quarters text-[#16A36A]"></i> ${battery}% ${data.isCharging ? '(Charging)' : ''}`;
+      if (mBat) {
+        if (isCharging) {
+          mBat.innerHTML = `<i class="fa-solid fa-bolt text-[#0057FF] animate-pulse"></i> ${battery}% <span class="text-[#0057FF] font-bold">(Charging ⚡)</span>`;
+        } else {
+          mBat.innerHTML = `<i class="fa-solid fa-battery-three-quarters text-[#16A36A]"></i> ${battery}% <span class="text-[#6B7280]">(Not charging)</span>`;
+        }
+      }
 
       // Sync Time
       const dSync = document.getElementById('dashLastSync');
@@ -1868,6 +1936,9 @@ service cloud.firestore {
     function unlinkDeviceSession() {
       if (!confirm("Are you sure you want to disconnect your Android phone from this desktop session?")) return;
 
+      const sessToUnlink = currentSessionId;
+      const devToUnlink = boundDeviceId;
+
       if (sessionListener) { sessionListener(); sessionListener = null; }
       if (queueListener) { queueListener(); queueListener = null; }
       if (historyListener) { historyListener(); historyListener = null; }
@@ -1875,27 +1946,28 @@ service cloud.firestore {
       if (templatesListener) { templatesListener(); templatesListener = null; }
       if (deviceDocListener) { deviceDocListener(); deviceDocListener = null; }
 
-      if (db && currentSessionId) {
-        db.collection('sessions').doc(currentSessionId).update({
-          status: "DISCONNECTED"
-        }).catch(() => {});
-      }
-
-      if (db && boundDeviceId) {
-        db.collection('devices').doc(boundDeviceId).update({
-          status: "DISCONNECTED",
-          linkedSession: null
-        }).catch(() => {});
-      }
-
       localStorage.removeItem('simplesms_bound_device');
       localStorage.removeItem('simplesms_web_session');
       boundDeviceId = "";
       currentSessionId = "";
 
+      if (db) {
+        const unlinkPayload = {
+          status: "DISCONNECTED",
+          linkedSession: null,
+          unlinkedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        if (sessToUnlink) {
+          db.collection('sessions').doc(sessToUnlink).set(unlinkPayload, { merge: true }).catch(console.warn);
+        }
+        if (devToUnlink) {
+          db.collection('devices').doc(devToUnlink).set(unlinkPayload, { merge: true }).catch(console.warn);
+        }
+      }
+
       closeModal('modalDeviceStatus');
       showToast("Phone disconnected", "info");
-      navigateTo('home');
+      navigateTo('connect');
     }
 
     // -------------------------------------------------------------------------

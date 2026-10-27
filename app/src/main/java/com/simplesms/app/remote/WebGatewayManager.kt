@@ -1,5 +1,6 @@
 package com.simplesms.app.remote
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -7,6 +8,8 @@ import android.content.SharedPreferences
 import android.os.BatteryManager
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentSnapshot
@@ -40,6 +43,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -65,7 +69,13 @@ object WebGatewayManager {
     private var templatesListener: ListenerRegistration? = null
     private var contactsSyncListener: ListenerRegistration? = null
     private var deviceDocListener: ListenerRegistration? = null
+    private var sessionDocListener: ListenerRegistration? = null
+    private var powerStateReceiver: BroadcastReceiver? = null
     private var heartbeatJob: Job? = null
+
+    @Volatile private var lastReportedCharging: Boolean? = null
+    @Volatile private var lastReportedBattery: Int = -1
+    @Volatile private var lastBatterySyncTime: Long = 0L
 
     private val _historyUpdateTrigger = MutableSharedFlow<Unit>(replay = 1, extraBufferCapacity = 64)
     val historyUpdateTrigger: SharedFlow<Unit> = _historyUpdateTrigger.asSharedFlow()
@@ -99,9 +109,136 @@ object WebGatewayManager {
             val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
             val intent = context.registerReceiver(null, filter)
             val status = intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
-            status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
+            val plugged = intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) ?: -1
+            status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                status == BatteryManager.BATTERY_STATUS_FULL ||
+                plugged == BatteryManager.BATTERY_PLUGGED_AC ||
+                plugged == BatteryManager.BATTERY_PLUGGED_USB ||
+                plugged == BatteryManager.BATTERY_PLUGGED_WIRELESS
         } catch (_: Exception) {
             false
+        }
+    }
+
+    fun syncBatteryStateToFirestore(context: Context, force: Boolean = false) {
+        val now = System.currentTimeMillis()
+        val batteryPct = getBatteryLevel(context)
+        val isCharging = getIsCharging(context)
+
+        val chargingChanged = (lastReportedCharging != isCharging)
+        val batteryChanged = (lastReportedBattery != batteryPct && (now - lastBatterySyncTime > 4000L))
+
+        if (!force && !chargingChanged && !batteryChanged) {
+            return
+        }
+
+        lastReportedCharging = isCharging
+        lastReportedBattery = batteryPct
+        lastBatterySyncTime = now
+
+        scope.launch {
+            try {
+                if (FirebaseApp.getApps(context).isEmpty()) return@launch
+                val firestore = FirebaseFirestore.getInstance()
+                val deviceId = getDeviceId(context)
+
+                val batteryData = mapOf(
+                    "battery" to batteryPct,
+                    "batteryLevel" to batteryPct,
+                    "isCharging" to isCharging,
+                    "lastSeen" to FieldValue.serverTimestamp()
+                )
+
+                firestore.collection("devices").document(deviceId)
+                    .set(batteryData, SetOptions.merge())
+
+                val sessId = _linkedSessionId.value ?: getLinkedSession(context)
+                if (!sessId.isNullOrBlank()) {
+                    firestore.collection("sessions").document(sessId)
+                        .set(batteryData, SetOptions.merge())
+                }
+                Log.d(TAG, "Instant battery/charging sync: battery=$batteryPct%, isCharging=$isCharging")
+            } catch (e: Exception) {
+                Log.w(TAG, "Battery state sync failed: ${e.message}")
+            }
+        }
+    }
+
+    private fun registerPowerStateReceiver(context: Context) {
+        if (powerStateReceiver != null) return
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(c: Context?, intent: Intent?) {
+                val action = intent?.action ?: return
+                if (action == Intent.ACTION_POWER_CONNECTED ||
+                    action == Intent.ACTION_POWER_DISCONNECTED ||
+                    action == Intent.ACTION_BATTERY_CHANGED
+                ) {
+                    val appContext = c?.applicationContext ?: context.applicationContext
+                    syncBatteryStateToFirestore(appContext)
+                }
+            }
+        }
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_POWER_CONNECTED)
+            addAction(Intent.ACTION_POWER_DISCONNECTED)
+            addAction(Intent.ACTION_BATTERY_CHANGED)
+        }
+        try {
+            ContextCompat.registerReceiver(
+                context.applicationContext,
+                receiver,
+                filter,
+                ContextCompat.RECEIVER_EXPORTED
+            )
+            powerStateReceiver = receiver
+            syncBatteryStateToFirestore(context.applicationContext, force = true)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to register power state receiver: ${e.message}")
+        }
+    }
+
+    private fun unregisterPowerStateReceiver(context: Context) {
+        powerStateReceiver?.let {
+            try {
+                context.applicationContext.unregisterReceiver(it)
+            } catch (_: Exception) {}
+            powerStateReceiver = null
+        }
+    }
+
+    fun handleRemoteDelink(context: Context) {
+        scope.launch {
+            try {
+                getPrefs(context).edit().remove(KEY_LINKED_SESSION).apply()
+                _linkedSessionId.value = null
+                _isOnline.value = false
+
+                heartbeatJob?.cancel()
+                heartbeatJob = null
+
+                unregisterPowerStateReceiver(context)
+
+                queueListener?.remove()
+                queueListener = null
+                historyListener?.remove()
+                historyListener = null
+                templatesListener?.remove()
+                templatesListener = null
+                contactsSyncListener?.remove()
+                contactsSyncListener = null
+                deviceDocListener?.remove()
+                deviceDocListener = null
+                sessionDocListener?.remove()
+                sessionDocListener = null
+
+                WebGatewayService.stop(context)
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Desktop Web Portal disconnected", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in handleRemoteDelink", e)
+            }
         }
     }
 
@@ -301,6 +438,7 @@ object WebGatewayManager {
                 }
 
                 startHeartbeat(context, deviceId)
+                registerPowerStateReceiver(context)
                 syncContactsToFirestore(context, deviceId)
 
                 // 2. Register FCM push token for background waking
@@ -457,10 +595,9 @@ object WebGatewayManager {
                     val status = doc.getString("status") ?: ""
                     val linkedSess = doc.getString("linkedSession")
 
-                    if (status.equals("DISCONNECTED", ignoreCase = true)) {
-                        getPrefs(context).edit().remove(KEY_LINKED_SESSION).apply()
-                        _linkedSessionId.value = null
-                        _isOnline.value = false
+                    if (status.equals("DISCONNECTED", ignoreCase = true) || (doc.contains("linkedSession") && linkedSess == null)) {
+                        Log.d(TAG, "Device remote delink received from Web Portal")
+                        handleRemoteDelink(context)
                         return@addSnapshotListener
                     }
 
@@ -472,6 +609,21 @@ object WebGatewayManager {
                     _isOnline.value = online
                     if (!effectiveSession.isNullOrBlank()) {
                         _linkedSessionId.value = effectiveSession
+                    }
+                }
+
+                // 8. Real-time Session doc listener: instant unlink when user disconnects on Web Portal
+                sessionDocListener?.remove()
+                val currentSess = _linkedSessionId.value ?: getLinkedSession(context)
+                if (!currentSess.isNullOrBlank()) {
+                    val sessDocRef = firestore.collection("sessions").document(currentSess)
+                    sessionDocListener = sessDocRef.addSnapshotListener { sDoc, sErr ->
+                        if (sErr != null || sDoc == null || !sDoc.exists()) return@addSnapshotListener
+                        val sStatus = sDoc.getString("status") ?: ""
+                        if (sStatus.equals("DISCONNECTED", ignoreCase = true)) {
+                            Log.d(TAG, "Session remote delink received from Web Portal")
+                            handleRemoteDelink(context)
+                        }
                     }
                 }
 
@@ -487,6 +639,7 @@ object WebGatewayManager {
     fun stopGateway(context: Context) {
         heartbeatJob?.cancel()
         heartbeatJob = null
+        unregisterPowerStateReceiver(context)
         scope.launch {
             try {
                 if (FirebaseApp.getApps(context).isNotEmpty()) {
@@ -507,6 +660,8 @@ object WebGatewayManager {
             contactsSyncListener = null
             deviceDocListener?.remove()
             deviceDocListener = null
+            sessionDocListener?.remove()
+            sessionDocListener = null
             _isOnline.value = false
             WebGatewayService.stop(context)
         }
@@ -635,20 +790,50 @@ object WebGatewayManager {
     fun unlinkSession(context: Context) {
         val sessionId = _linkedSessionId.value ?: getLinkedSession(context)
         val deviceId = getDeviceId(context)
-        scope.launch {
-            try {
-                val firestore = FirebaseFirestore.getInstance()
-                if (!sessionId.isNullOrBlank()) {
-                    firestore.collection("sessions").document(sessionId)
-                        .update("status", "DISCONNECTED")
-                }
-                firestore.collection("devices").document(deviceId)
-                    .update("status", "DISCONNECTED", "linkedSession", null)
-            } catch (_: Exception) {}
-        }
+
+        // Clear local state immediately so UI updates with zero latency
         getPrefs(context).edit().remove(KEY_LINKED_SESSION).apply()
         _linkedSessionId.value = null
         _isOnline.value = false
+
+        heartbeatJob?.cancel()
+        heartbeatJob = null
+
+        unregisterPowerStateReceiver(context)
+
+        queueListener?.remove()
+        queueListener = null
+        historyListener?.remove()
+        historyListener = null
+        templatesListener?.remove()
+        templatesListener = null
+        contactsSyncListener?.remove()
+        contactsSyncListener = null
+        deviceDocListener?.remove()
+        deviceDocListener = null
+        sessionDocListener?.remove()
+        sessionDocListener = null
+
+        WebGatewayService.stop(context)
+
+        scope.launch {
+            try {
+                if (FirebaseApp.getApps(context).isNotEmpty()) {
+                    val firestore = FirebaseFirestore.getInstance()
+                    val unlinkMap = mapOf(
+                        "status" to "DISCONNECTED",
+                        "linkedSession" to null,
+                        "unlinkedAt" to FieldValue.serverTimestamp()
+                    )
+                    if (!sessionId.isNullOrBlank()) {
+                        firestore.collection("sessions").document(sessionId)
+                            .set(unlinkMap, SetOptions.merge())
+                    }
+                    firestore.collection("devices").document(deviceId)
+                        .set(unlinkMap, SetOptions.merge())
+                }
+            } catch (_: Exception) {}
+        }
     }
 
     private fun parseSessionId(qrContent: String): String {
