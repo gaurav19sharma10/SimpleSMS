@@ -481,7 +481,7 @@ fun WebGatewayTab(viewModel: MainViewModel) {
             containerColor = Color.White,
             title = {
                 Text(
-                    text = "Enter Pairing Code",
+                    text = "Enter 10-Digit Pairing Code",
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
                     color = Color(0xFF172033)
@@ -490,15 +490,19 @@ fun WebGatewayTab(viewModel: MainViewModel) {
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "Enter the session code displayed below the QR code on your computer's browser.",
+                        text = "Enter the 10-digit code displayed on the Web Portal (e.g. K7M9P-2R4X8). Hyphens and spaces are optional.",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color(0xFF667085)
                     )
                     OutlinedTextField(
                         value = manualCodeInput,
-                        onValueChange = { manualCodeInput = it },
+                        onValueChange = { input ->
+                            // Auto-uppercase and filter allowed chars
+                            val filtered = input.uppercase().filter { it.isLetterOrDigit() || it == '-' || it == ' ' }.take(14)
+                            manualCodeInput = filtered
+                        },
                         singleLine = true,
-                        placeholder = { Text("e.g. sess_173000...") },
+                        placeholder = { Text("e.g. K7M9P - 2R4X8") },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -519,14 +523,15 @@ fun WebGatewayTab(viewModel: MainViewModel) {
             confirmButton = {
                 Button(
                     onClick = {
-                        if (manualCodeInput.isBlank()) {
-                            Toast.makeText(context, "Please enter a valid pairing code", Toast.LENGTH_SHORT).show()
+                        val sanitized = manualCodeInput.replace("-", "").replace(" ", "").trim().uppercase()
+                        if (sanitized.isBlank()) {
+                            Toast.makeText(context, "Please enter a valid 10-digit pairing code", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
                         isManualPairing = true
                         WebGatewayManager.pairWithScannedQr(
                             context = context,
-                            qrRawValue = manualCodeInput.trim(),
+                            qrRawValue = sanitized,
                             onSuccess = {
                                 isManualPairing = false
                                 showManualCodeDialog = false

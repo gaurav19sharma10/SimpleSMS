@@ -506,7 +506,7 @@ object WebGatewayManager {
     ) {
         val sessionId = parseSessionId(qrRawValue)
         if (sessionId.isBlank()) {
-            onError("Invalid QR Code format. Please scan the QR code from the Simple SMS Web Portal.")
+            onError("Invalid pairing code. Please enter the 10-digit code shown on the Web Portal (e.g. K7M9P-2R4X8) or scan the QR code.")
             return
         }
 
@@ -611,19 +611,23 @@ object WebGatewayManager {
     private fun parseSessionId(qrContent: String): String {
         val trimmed = qrContent.trim()
         if (trimmed.startsWith("simplesms://pair?session=")) {
-            return trimmed.substringAfter("session=").substringBefore("&")
+            val raw = trimmed.substringAfter("session=").substringBefore("&")
+            return raw.replace("-", "").replace(" ", "").trim().uppercase()
         }
         if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
             try {
                 val json = JSONObject(trimmed)
                 val id = json.optString("sessionId", json.optString("session", ""))
-                if (id.isNotBlank()) return id
+                if (id.isNotBlank()) return id.replace("-", "").replace(" ", "").trim().uppercase()
             } catch (_: Exception) {}
         }
-        if (trimmed.startsWith("sess_")) return trimmed
-        // If code entered without whitespace
-        if (trimmed.isNotBlank() && !trimmed.contains(" ") && trimmed.length in 4..64) {
-            return trimmed
+        val clean = trimmed.replace("-", "").replace(" ", "").trim()
+        if (clean.startsWith("sess_")) return clean
+        if (clean.length == 10 && clean.all { it.isLetterOrDigit() }) {
+            return clean.uppercase()
+        }
+        if (clean.isNotBlank() && clean.length in 4..64) {
+            return clean.uppercase()
         }
         return ""
     }

@@ -528,6 +528,28 @@
               <i class="fa-solid fa-shield-halved text-[#16A36A] text-sm"></i>
               <span>Hardware-paired via Google Cloud Firestore with zero third-party intermediaries.</span>
             </div>
+
+            <!-- 10-Digit Alphanumeric Manual Pairing Code Card -->
+            <div class="p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-[#1E293B] flex items-center gap-1.5">
+                  <i class="fa-solid fa-keyboard text-[#0057FF]"></i> Connect Manually (10-Digit Code)
+                </span>
+                <span class="text-[10px] font-bold text-[#16A36A] bg-[#DCFCE7] border border-[#BBF7D0] px-2 py-0.5 rounded-full">Secure 50-bit</span>
+              </div>
+              <p class="text-[11px] text-[#64748B]">Can't scan the QR? Open Simple SMS app, tap <strong class="text-[#1E293B]">"Enter Pairing Code Manually"</strong>, and enter:</p>
+              
+              <div class="flex items-center gap-2">
+                <div class="flex-1 bg-white border-2 border-[#0057FF]/30 rounded-xl px-4 py-2 text-center shadow-xs">
+                  <span id="displayPairingCodeFormatted" class="font-mono text-xl sm:text-2xl font-black text-[#0057FF] tracking-wider select-all">----------</span>
+                </div>
+                <button type="button" onclick="copyPairingCode()" id="copyCodeBtn" class="bg-[#0057FF] hover:bg-[#004AD9] text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer">
+                  <i class="fa-regular fa-copy"></i>
+                  <span id="copyCodeBtnText">Copy</span>
+                </button>
+              </div>
+              <p class="text-[10px] text-[#94A3B8] text-center">Case-insensitive • High-legibility alphanumeric code</p>
+            </div>
           </div>
 
           <!-- QR Code Display (5 cols) -->
@@ -542,11 +564,11 @@
                 <span class="w-2 h-2 rounded-full bg-[#0057FF] animate-ping"></span>
                 <span id="qrStatusText">Waiting for phone scan...</span>
               </div>
-              <p class="text-[10px] text-[#9CA3AF] mt-2 font-mono">Session ID: <span id="displaySessionId" class="text-[#0057FF]">generating...</span></p>
+              <p class="text-[11px] text-[#64748B] mt-2 font-mono">10-Digit Code: <span id="displaySessionId" class="text-[#0057FF] font-bold tracking-wider">----------</span></p>
               
               <button onclick="generateNewPairingSession()" class="text-xs font-bold text-[#0057FF] hover:underline mt-2 inline-flex items-center gap-1.5">
                 <i class="fa-solid fa-arrows-rotate"></i>
-                <span>Refresh QR Code</span>
+                <span>Refresh QR & Code</span>
               </button>
             </div>
           </div>
@@ -1595,17 +1617,56 @@ service cloud.firestore {
     }
 
     // -------------------------------------------------------------------------
-    // QR PAIRING ENGINE (Real Firestore pairing)
+    // QR & 10-DIGIT PAIRING ENGINE (Real Firestore pairing)
     // -------------------------------------------------------------------------
+    function generate10DigitAlphanumericCode() {
+      // 32 unambiguous alphanumeric characters (omits 0, O, 1, I for zero ambiguity)
+      const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+      const randomValues = new Uint8Array(10);
+      if (window.crypto && window.crypto.getRandomValues) {
+        window.crypto.getRandomValues(randomValues);
+      } else {
+        for (let i = 0; i < 10; i++) randomValues[i] = Math.floor(Math.random() * 256);
+      }
+      let code = "";
+      for (let i = 0; i < 10; i++) {
+        code += chars[randomValues[i] % chars.length];
+      }
+      return code;
+    }
+
     function generateNewPairingSession() {
-      currentSessionId = "sess_" + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+      currentSessionId = generate10DigitAlphanumericCode();
       localStorage.setItem('simplesms_web_session', currentSessionId);
 
+      // Display format: e.g. "K7M9P - 2R4X8" (easy to read in two 5-character chunks)
+      const formatted = currentSessionId.substring(0, 5) + " - " + currentSessionId.substring(5, 10);
+
       const label = document.getElementById('displaySessionId');
-      if (label) label.innerText = currentSessionId;
+      if (label) label.innerText = formatted;
+
+      const codeBox = document.getElementById('displayPairingCodeFormatted');
+      if (codeBox) codeBox.innerText = formatted;
 
       renderQrCode("simplesms://pair?session=" + currentSessionId);
       listenToPairingSession(currentSessionId);
+    }
+
+    function copyPairingCode() {
+      if (!currentSessionId) return;
+      navigator.clipboard.writeText(currentSessionId).then(() => {
+        const btnText = document.getElementById('copyCodeBtnText');
+        if (btnText) {
+          btnText.innerText = "Copied!";
+          setTimeout(() => {
+            const b = document.getElementById('copyCodeBtnText');
+            if (b) b.innerText = "Copy";
+          }, 2000);
+        }
+        showToast("Copied pairing code: " + currentSessionId, "success");
+      }).catch(() => {
+        showToast("Code: " + currentSessionId, "info");
+      });
     }
 
     function renderQrCode(dataString) {
@@ -1630,15 +1691,24 @@ service cloud.firestore {
       const sessionRef = db.collection('sessions').doc(sessionId);
 
       sessionRef.set({
+        code: sessionId,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         status: "WAITING_FOR_SCAN",
         browser: navigator.userAgent.includes("Chrome") ? "Google Chrome" : "Web Browser",
         platform: navigator.platform || "Desktop"
       }, { merge: true });
 
+      // Also set sess_ prefixed alias document for backward compatibility with previous APK builds
+      db.collection('sessions').doc("sess_" + sessionId.toLowerCase()).set({
+        code: sessionId,
+        aliasOf: sessionId,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        status: "WAITING_FOR_SCAN"
+      }, { merge: true }).catch(() => {});
+
       const statusText = document.getElementById('qrStatusText');
       if (statusText) {
-        statusText.innerText = "Waiting for phone scan...";
+        statusText.innerText = "Waiting for phone scan or manual code...";
         statusText.className = "";
       }
 
