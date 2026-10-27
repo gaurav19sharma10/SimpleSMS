@@ -144,10 +144,14 @@ object WebGatewayManager {
                             "status" to "online"
                         )
 
+                        val sessId = _linkedSessionId.value ?: getLinkedSession(context)
+                        if (!sessId.isNullOrBlank()) {
+                            updateData["linkedSession"] = sessId
+                        }
+
                         firestore.collection("devices").document(deviceId)
                             .set(updateData, SetOptions.merge())
 
-                        val sessId = _linkedSessionId.value ?: getLinkedSession(context)
                         if (!sessId.isNullOrBlank()) {
                             firestore.collection("sessions").document(sessId)
                                 .set(updateData, SetOptions.merge())
@@ -263,7 +267,7 @@ object WebGatewayManager {
                 val slotNum = (activeSim?.slotIndex ?: 0) + 1
                 val phoneNumber = activeSim?.phoneNumber?.takeIf { it.isNotBlank() } ?: ""
 
-                val infoMap = mapOf(
+                val infoMap = mutableMapOf<String, Any>(
                     "model" to deviceModel,
                     "deviceModel" to deviceModel,
                     "manufacturer" to Build.MANUFACTURER,
@@ -283,10 +287,14 @@ object WebGatewayManager {
                     "status" to "online"
                 )
 
+                val sessId = _linkedSessionId.value ?: getLinkedSession(context)
+                if (!sessId.isNullOrBlank()) {
+                    infoMap["linkedSession"] = sessId
+                }
+
                 firestore.collection("devices").document(deviceId)
                     .set(infoMap, SetOptions.merge())
 
-                val sessId = _linkedSessionId.value ?: getLinkedSession(context)
                 if (!sessId.isNullOrBlank()) {
                     firestore.collection("sessions").document(sessId)
                         .set(infoMap, SetOptions.merge())
@@ -446,14 +454,24 @@ object WebGatewayManager {
                 val devDocRef = firestore.collection("devices").document(deviceId)
                 deviceDocListener = devDocRef.addSnapshotListener { doc: DocumentSnapshot?, error: FirebaseFirestoreException? ->
                     if (error != null || doc == null || !doc.exists()) return@addSnapshotListener
-                    val status = doc.getString("status") ?: "offline"
+                    val status = doc.getString("status") ?: ""
                     val linkedSess = doc.getString("linkedSession")
-                    val online = (status == "online" || status == "PAIRED")
-                    _isOnline.value = online
-                    if (!online || linkedSess.isNullOrBlank()) {
+
+                    if (status.equals("DISCONNECTED", ignoreCase = true)) {
+                        getPrefs(context).edit().remove(KEY_LINKED_SESSION).apply()
                         _linkedSessionId.value = null
-                    } else {
-                        _linkedSessionId.value = linkedSess
+                        _isOnline.value = false
+                        return@addSnapshotListener
+                    }
+
+                    val effectiveSession = linkedSess?.takeIf { it.isNotBlank() }
+                        ?: _linkedSessionId.value
+                        ?: getLinkedSession(context)
+
+                    val online = (status.equals("online", ignoreCase = true) || status.equals("PAIRED", ignoreCase = true) || !effectiveSession.isNullOrBlank())
+                    _isOnline.value = online
+                    if (!effectiveSession.isNullOrBlank()) {
+                        _linkedSessionId.value = effectiveSession
                     }
                 }
 
@@ -550,6 +568,31 @@ object WebGatewayManager {
                     "lastSeen" to FieldValue.serverTimestamp()
                 )
 
+                val deviceData = mapOf(
+                    "linkedSession" to sessionId,
+                    "status" to "online",
+                    "deviceModel" to deviceModel,
+                    "model" to deviceModel,
+                    "manufacturer" to Build.MANUFACTURER,
+                    "brand" to Build.BRAND,
+                    "androidVersion" to osVersion,
+                    "osVersion" to osVersion,
+                    "sdkInt" to Build.VERSION.SDK_INT,
+                    "carrier" to "SIM $slotNum ($carrierName)",
+                    "simCarrier" to carrierName,
+                    "simSlot" to slotNum,
+                    "phoneNumber" to phoneNumber,
+                    "simSubId" to (activeSim?.subscriptionId ?: -1),
+                    "battery" to batteryPct,
+                    "batteryLevel" to batteryPct,
+                    "isCharging" to isCharging,
+                    "lastSeen" to FieldValue.serverTimestamp()
+                )
+
+                // Write pairing to Firestore devices AND sessions
+                firestore.collection("devices").document(deviceId)
+                    .set(deviceData, SetOptions.merge())
+
                 // Write pairing to Firestore
                 firestore.collection("sessions").document(sessionId)
                     .set(sessionData, SetOptions.merge())
@@ -600,7 +643,7 @@ object WebGatewayManager {
                         .update("status", "DISCONNECTED")
                 }
                 firestore.collection("devices").document(deviceId)
-                    .update("status", "offline", "linkedSession", null)
+                    .update("status", "DISCONNECTED", "linkedSession", null)
             } catch (_: Exception) {}
         }
         getPrefs(context).edit().remove(KEY_LINKED_SESSION).apply()

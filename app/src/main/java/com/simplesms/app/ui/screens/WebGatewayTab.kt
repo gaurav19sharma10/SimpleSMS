@@ -70,6 +70,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -119,8 +120,16 @@ fun WebGatewayTab(viewModel: MainViewModel) {
     var isGatewayActive by remember { mutableStateOf(WebGatewayManager.isGatewayEnabled(context)) }
 
     // Navigation state: starts on MANAGEMENT if linked, else LANDING
-    var currentScreenState by remember(linkedSessionId) {
+    var currentScreenState by remember {
         mutableStateOf(if (linkedSessionId != null) GatewayScreenState.MANAGEMENT else GatewayScreenState.LANDING)
+    }
+
+    LaunchedEffect(linkedSessionId) {
+        if (linkedSessionId != null) {
+            currentScreenState = GatewayScreenState.MANAGEMENT
+        } else if (currentScreenState == GatewayScreenState.MANAGEMENT) {
+            currentScreenState = GatewayScreenState.LANDING
+        }
     }
 
     // Interactive dialog states

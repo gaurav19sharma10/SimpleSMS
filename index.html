@@ -1720,6 +1720,15 @@ service cloud.firestore {
           boundDeviceId = data.deviceId;
           localStorage.setItem('simplesms_bound_device', boundDeviceId);
 
+          // Guarantee devices/{deviceId} has linkedSession and status online
+          if (db && boundDeviceId) {
+            db.collection('devices').doc(boundDeviceId).set({
+              linkedSession: sessionId,
+              status: "online",
+              lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true }).catch(console.warn);
+          }
+
           if (statusText) {
             statusText.innerText = "Phone connected! Opening dashboard...";
             statusText.className = "text-[#16A36A] font-bold";
@@ -1874,7 +1883,7 @@ service cloud.firestore {
 
       if (db && boundDeviceId) {
         db.collection('devices').doc(boundDeviceId).update({
-          status: "offline",
+          status: "DISCONNECTED",
           linkedSession: null
         }).catch(() => {});
       }
